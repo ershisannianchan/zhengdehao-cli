@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>蒸的好 · 蛇口程序员专属</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --border:#30363d;
+    --green:#3fb950; --cyan:#58a6ff; --yellow:#d29922;
+    --red:#f85149; --fg:#c9d1d9; --dim:#8b949e;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    background:var(--bg); color:var(--fg); min-height:100vh;
+    font-family:'SF Mono',Consolas,'Cascadia Code',Menlo,monospace;
+    display:flex; flex-direction:column; align-items:center; padding:24px 14px;
+    background-image:radial-gradient(circle at 20% 10%, rgba(88,166,255,.06), transparent 40%),
+                     radial-gradient(circle at 80% 90%, rgba(63,185,80,.05), transparent 40%);
+  }
+  .terminal{
+    width:100%; max-width:640px; background:var(--panel);
+    border:1px solid var(--border); border-radius:12px; overflow:hidden;
+    box-shadow:0 20px 60px rgba(0,0,0,.55);
+  }
+  .titlebar{
+    display:flex; align-items:center; gap:8px; padding:12px 16px;
+    background:#0d1117; border-bottom:1px solid var(--border);
+  }
+  .dot{width:12px;height:12px;border-radius:50%;}
+  .dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .titlebar .t{flex:1; text-align:center; color:var(--dim); font-size:12px;}
+  .body{padding:22px 20px; font-size:13.5px; line-height:1.7;}
+
+  .banner{color:var(--cyan); white-space:pre; line-height:1.5; margin-bottom:14px; font-size:12.5px;}
+  .quote{color:#fff; margin-bottom:4px;}
+  .quote-en{color:var(--dim); font-size:12px; margin-bottom:16px;}
+  .fresh{color:var(--yellow); margin-bottom:18px; font-size:13px;}
+
+  .cmd{color:var(--fg); margin:12px 0;}
+  .cmd .p{color:var(--green);}
+  .out{color:var(--dim); white-space:pre; font-size:12px; line-height:1.6; margin:6px 0 4px 18px;}
+  .out .hl{color:var(--green);}
+
+  .secline{border-top:1px dashed var(--border); margin:18px 0;}
+
+  .cta{text-align:center; margin:16px 0 8px;}
+  .btn{
+    background:linear-gradient(180deg,#238636,#196c2e); color:#fff; border:none;
+    border-radius:8px; padding:14px 30px; font-size:15px; font-weight:bold; cursor:pointer;
+    font-family:inherit; letter-spacing:1px; transition:.15s;
+  }
+  .btn:hover{filter:brightness(1.12);}
+  .btn:active{transform:translateY(1px);}
+
+  .codebox{
+    display:none; margin:14px auto 0; padding:16px; background:#0d1117;
+    border:1px solid var(--yellow); border-radius:8px; text-align:center; max-width:420px;
+  }
+  .codebox .code{color:var(--yellow); font-size:20px; letter-spacing:1px; font-weight:bold; margin-bottom:8px;}
+  .codebox .tip{color:var(--dim); font-size:12px; line-height:1.6;}
+
+  .foot{width:100%; max-width:640px; margin-top:18px; padding:16px 18px;
+    background:var(--panel); border:1px solid var(--border); border-radius:12px; font-size:12.5px; line-height:1.8;}
+  .foot .row{color:var(--fg);}
+  .foot .row b{color:var(--cyan);}
+  .foot .dianping{color:var(--green);}
+
+  .cursor{display:inline-block; width:8px; height:15px; background:var(--green); vertical-align:-2px; animation:blink 1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:0;}}
+</style>
+</head>
+<body>
+
+<div class="terminal">
+  <div class="titlebar">
+    <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    <span class="t">zheng — 蛇口网谷 · bash</span>
+  </div>
+
+  <div class="body">
+    <pre class="banner">╔══════════════════════════════════════════╗
+║   蒸 的 好 · 蒸 汽 海 鲜                    ║
+║   Established 2015 · 蛇口网谷 · 11y uptime ║
+╚══════════════════════════════════════════╝</pre>
+
+    <div class="quote">「最好的代码不需要注释，最好的海鲜不需要调味。」</div>
+    <div class="quote-en">Steam is the sauce.</div>
+
+    <div class="fresh">🐟 今日蛇口渔港直采到店：东星斑 · 象拔蚌 · 帝王蟹</div>
+
+    <div class="cmd"><span class="p">$</span> zheng ping</div>
+    <pre class="out">64 bytes from 渔港码头: ttl=11 time=4.0h  └─ 渔船刚靠岸
+64 bytes from 餐桌上桌:  ttl=11 time=4.1h  └─ 蒸汽锅已预热
+<span class="hl">4 packets transmitted, 4 received, 0% loss</span>
+这不是延迟，是海的新鲜度。今天也准时到店。</pre>
+
+    <div class="cmd"><span class="p">$</span> zheng story --part 鲜</div>
+    <pre class="out">早上 5:40 蛇口渔港的船靠岸
+蛇口渔港 → 万融大厦 = 4.2 公里
+<span class="hl">「比你的 CDN 到用户还近。」</span></pre>
+
+    <div class="secline"></div>
+
+    <div class="cmd"><span class="p">$</span> zheng code<span class="cursor"></span></div>
+    <div class="cta">
+      <button class="btn" id="genBtn" onclick="genCode()">领取专属暗号 · 全场 8 折</button>
+    </div>
+    <div class="codebox" id="codebox">
+      <div class="code" id="code"></div>
+      <div class="tip">到店报暗号 → 全场 8 折（不含团购/套餐 · 特价菜 · 酒水）<br>📞 0755-26922888 / 13827492749 · 7 天有效</div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">
+  <div class="row"><b>蒸的好海鲜馆 · 蒸汽海鲜（蛇口网谷店）</b></div>
+  <div class="row">📍 深圳南山南海大道万融大厦C座G层101（地铁2号线水湾站D口）</div>
+  <div class="row">🕐 10:00–22:30 全年无休 · 📞 0755-26922888 / 13827492749</div>
+  <div class="row dianping">⭐ 大众点评 4.8 分 · 11 年 · 0 食品安全事故</div>
+</div>
+
+<script>
+  // 暗号生成（与 CLI codes.py 同算法：HMAC-SHA256 → base32 前6位签名）
+  const SECRET = "REDACTED_SECRET_KEY";
+  const PREFIXES = ["STEAM","ZHENG","原味","锁鲜","蛇口"];
+
+  function base32(bytes){
+    const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    let bits=0, val=0, out="";
+    for(const b of bytes){ val=(val<<8)|b; bits+=8;
+      while(bits>=5){ out+=A[(val>>>(bits-5))&31]; bits-=5; } }
+    if(bits>0) out+=A[(val<<(5-bits))&31];
+    return out;
+  }
+
+  async function sign(msg){
+    const enc = new TextEncoder();
+    const key = await crypto.subtle.importKey("raw", enc.encode(SECRET),
+      {name:"HMAC", hash:"SHA-256"}, false, ["sign"]);
+    const sig = await crypto.subtle.sign("HMAC", key, enc.encode(msg));
+    return base32(new Uint8Array(sig)).slice(0,6);
+  }
+
+  async function genCode(){
+    const prefix = PREFIXES[Math.floor(Math.random()*PREFIXES.length)];
+    const d = new Date();
+    const mmdd = String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+    const digits = String(Math.floor(Math.random()*10000)).padStart(4,"0");
+    const body = `${prefix}-${mmdd}-${digits}`;
+    const code = `${body}-${await sign(body)}`;
+    document.getElementById("code").textContent = code;
+    document.getElementById("codebox").style.display = "block";
+  }
+</script>
+</body>
+</html>

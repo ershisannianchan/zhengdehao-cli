@@ -30,6 +30,7 @@ def card_text():
     expire = (datetime.date.today() + datetime.timedelta(days=BRAND.coupon.get("valid_days", 7))).strftime("%m-%d")
     hot = [i for cat in BRAND.menu.values() for i in cat if i.get("hot") and i["price"] is not None][:2]
     discount = BRAND.coupon.get("discount", "全场8折")
+    exclude = BRAND.coupon.get("exclude", "")
     lines = [
         f"🦞 {BRAND.name} · {BRAND.tagline} · 蒸汽锁鲜",
         f"Established {BRAND.established} · {BRAND.uptime_years}y uptime · 大众点评 {BRAND.rating}",
@@ -40,7 +41,7 @@ def card_text():
         f"🍽 必点：{hot[0]['name']} ¥{hot[0]['price']} · {hot[1]['name']} ¥{hot[1]['price']}",
         "──────────────",
         f"🔐 专属暗号：{secret}",
-        f"📞 致电 {BRAND.phone} 报暗号 → {discount} · 有效至 {expire}",
+        f"📞 致电 {BRAND.phone} 报暗号 → {discount}（{exclude}）· 有效至 {expire}",
         "──────────────",
         "📱 扫码看套餐·评价·下单：",
         BRAND.dianping_url,
@@ -73,7 +74,7 @@ def build_html(card_lines, qr_lines, secret):
   <div class="sub">Established {established} · {uptime}y uptime · 大众点评 {rating}</div>
   <pre>{card_pre}</pre>
   <div class="qr"><pre>{qr_pre}</pre></div>
-  <div class="secret">🔐 暗号：{secret}（报暗号 {discount} · {valid_days} 天有效）</div>
+  <div class="secret">🔐 暗号：{secret}（报暗号 {discount}，{exclude} · {valid_days} 天有效）</div>
   <div class="hint">浏览器截图保存，或 Ctrl+P 导出为图片/PDF 分享</div>
 </div>
 </body>
@@ -81,6 +82,7 @@ def build_html(card_lines, qr_lines, secret):
         name=BRAND.name, tagline=BRAND.tagline, established=BRAND.established,
         uptime=BRAND.uptime_years, rating=BRAND.rating, secret=secret,
         discount=BRAND.coupon.get("discount", "全场8折"),
+        exclude=BRAND.coupon.get("exclude", ""),
         valid_days=BRAND.coupon.get("valid_days", 7),
         card_pre=card_pre, qr_pre=qr_pre)
 

@@ -251,6 +251,7 @@ tables:
 coupon:
   prefix: [STEAM, ZHENG, 原味, 锁鲜, 蛇口]
   discount: 全场8折
+  exclude: 不含团购/套餐 · 特价菜 · 酒水
   valid_days: 7
   # HMAC 签名密钥：部署到新客户时请更换（私有仓库默认安全）
   secret_key: "REDACTED_SECRET_KEY"

@@ -944,12 +944,13 @@ def code(verify, share):
         return f"  ║ {pad(text, W)}║"
 
     discount = BRAND.coupon.get("discount", "全场8折")
+    exclude = BRAND.coupon.get("exclude", "")
     print(c("\n  🔐 你的专属暗号\n", "bold"))
     print(c("  ╔" + "═" * W + "╗", "yellow"))
     print(c(_row(f"      {secret}"), "yellow"))
     print(c(_row(""), "yellow"))
     print(c(_row(f"致电 {BRAND.phone} 报暗号 → {discount}"), "yellow"))
-    print(c(_row("（不与点评优惠同享）"), "yellow"))
+    print(c(_row(f"（{exclude}）"), "yellow"))
     print(c(_row(f"有效至 {expire.strftime('%m-%d')} · 可分享给同事"), "yellow"))
     print(c("  ╚" + "═" * W + "╝", "yellow"))
     print()
@@ -958,7 +959,7 @@ def code(verify, share):
 
     if share:
         share_text = (f"🦞 请你的客——「{BRAND.name}」专属暗号：{secret}\n"
-                      f"📞 致电 {BRAND.phone} 报暗号 → {discount}\n"
+                      f"📞 致电 {BRAND.phone} 报暗号 → {discount}（{exclude}）\n"
                       f"⏱ 有效至 {expire.strftime('%m-%d')} · 可转给同事\n"
                       f"📍 {BRAND.address} · {BRAND.uptime_years}年 · 点评{BRAND.rating} · {BRAND.slogan}")
         print(c("\n  📤 分享文案：\n", "bold"))

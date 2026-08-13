@@ -33,7 +33,7 @@ zheng menu --hot      # 只看招牌菜
 zheng book 4          # 预订4人桌
 zheng cancel [订单号] # 取消订单 / 释放桌位
 zheng status          # 查看订单（预订记录）
-zheng code            # 领专属 8 折暗号（7天有效，可分享）
+zheng code            # 领专属 8 折暗号（不含团购/套餐·特价菜·酒水，7天有效）
 zheng code --verify <暗号>   # 商家端验证暗号真伪（离线可验）
 zheng share           # 生成分享卡片
 zheng ping / uptime / bench / pr   # 极客梗命令
