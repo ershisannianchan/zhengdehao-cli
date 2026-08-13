@@ -175,11 +175,26 @@ def save_codes(codes):
     return storage.save_json(codes, storage.codes_path())
 
 
-def load_image_map():
-    return storage.load_json(storage.image_map_path())
+def build_image_map():
+    """扫描 assets/dishes，用菜名最长匹配文件名，运行时生成 {菜名: 文件名}。
+    客户放图即自动关联（📷 标记 + zheng img），无需手工维护 image_map.json。"""
+    dishes_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets", "dishes")
+    mapping = {}
+    if not os.path.isdir(dishes_dir):
+        return mapping
+    files = [f for f in os.listdir(dishes_dir)
+             if f.lower().endswith((".png", ".jpg", ".jpeg"))]
+    items = sorted(BRAND.all_items.values(), key=lambda i: len(i["name"]), reverse=True)
+    for f in files:
+        stem = os.path.splitext(f)[0]
+        for it in items:
+            if it["name"] in stem:
+                mapping[it["name"]] = f
+                break
+    return mapping
 
 
-IMAGE_MAP = load_image_map()
+IMAGE_MAP = build_image_map()
 
 # 核销后端（默认本地 JSONL 日志）
 BACKEND = codes.LocalFileBackend()
@@ -990,13 +1005,14 @@ def verify(code_arg):
         print(c("  支持：暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
         return
     code_arg = code_arg.strip().upper()
-    if codes.CODE_RE.match(code_arg):
+    # 先判预订码（ZDH 前缀更具体），否则 CODE_RE 的宽泛前缀会把它误吞为暗号
+    if codes.BOOKING_CODE_RE.match(code_arg):
+        ok, msg = verify_booking_code(code_arg)
+        label = "CLI 预订码"
+    elif codes.CODE_RE.match(code_arg):
         ok, msg = verify_code(code_arg)
         label = "暗号"
         BACKEND.record_redeem(code_arg, ok, {"channel": "verify"})
-    elif codes.BOOKING_CODE_RE.match(code_arg):
-        ok, msg = verify_booking_code(code_arg)
-        label = "CLI 预订码"
     else:
         print(c(f"  ❌ 无法识别：{code_arg}", "red"))
         print(c("  支持：暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
@@ -1005,6 +1021,30 @@ def verify(code_arg):
     divider()
     print(c(f"  码：{code_arg}", "yellow"))
     print(c(f"  状态：{'✅' if ok else '❌'} {msg}", "green" if ok else "red"))
+    print()
+
+
+# ----------------------------------------------------------
+# zheng stats（数据闭环出口：发码/核销统计）
+# ----------------------------------------------------------
+@cli.command()
+def stats():
+    """📊 营销数据：发码数 / 核销数（数据闭环，回答「有没有用」）"""
+    banner()
+    print(c("  📊 营销数据", "bold"))
+    divider()
+    s = BACKEND.stats()
+    print(c(f"  发放暗号：{s['issued']} 个", "white"))
+    print(c(f"  有效核销：{s['redeemed']} 个", "white"))
+    if s["issued"]:
+        rate = s["redeemed"] / s["issued"] * 100
+        color = "green" if rate > 0 else "yellow"
+        print(c(f"  核销率：{rate:.1f}%", color))
+    else:
+        print(c("  核销率：—（暂无发码记录）", "yellow"))
+    print()
+    print(c("  💡 数据来源：~/.zheng/data/ledger.jsonl（本地核销日志）", "cyan"))
+    print(c("  💡 每次发码/核销自动记录，可统计 CLI 带来的真实转化", "cyan"))
     print()
 
 

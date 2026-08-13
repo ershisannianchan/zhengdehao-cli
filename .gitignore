@@ -15,7 +15,6 @@ orders.json
 tables.json
 codes.json
 ledger.jsonl
-image_map.json
 
 # ── 客户素材（143MB 照片/视频，不进仓库）───────────────
 assets/

@@ -76,7 +76,3 @@ def codes_path():
 
 def ledger_path():
     return os.path.join(data_dir(), "ledger.jsonl")
-
-
-def image_map_path():
-    return os.path.join(data_dir(), "image_map.json")

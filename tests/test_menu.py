@@ -7,7 +7,8 @@ import brand
 def test_load_brand_basic():
     b = brand.load_brand()
     assert b.name == "蒸的好海鲜馆"
-    assert b.phone == "0755-26922888"
+    assert "0755-26922888" in b.phone      # 门店座机
+    assert "13827492749" in b.phone       # 门店预订手机
 
 
 def test_menu_structure():
