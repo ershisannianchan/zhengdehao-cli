@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "zhengdehao"
+version = "3.0.0"
+description = "蒸的好海鲜馆 CLI · Steam is the sauce. · 品牌可配置的餐饮营销终端框架"
+requires-python = ">=3.8"
+dependencies = [
+    "click>=8.0",
+    "qrcode>=7.0",
+    "PyYAML>=6.0",
+]
+
+[project.scripts]
+zheng = "zheng:cli"
+"蒸的好" = "zheng:cli"
+"蒸的好菜单" = "zheng:shortcut"
+"蒸的好预订" = "zheng:shortcut"
+"蒸的好地址" = "zheng:shortcut"
+"蒸的好电话" = "zheng:shortcut"
+"蒸的好故事" = "zheng:shortcut"
+"蒸的好优惠" = "zheng:shortcut"
+"蒸的好暗号" = "zheng:shortcut"
+"蒸的好看图" = "zheng:shortcut"
+
+[tool.setuptools]
+py-modules = ["zheng", "zheng_ai", "zheng_fun", "zheng_share", "brand", "codes", "storage"]
+
+[tool.setuptools.data-files]
+"share/zhengdehao" = ["brand.yaml"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

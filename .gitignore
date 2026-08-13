@@ -1,0 +1,32 @@
+# ── Python ──────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.pytest_cache/
+
+# ── 运行时数据（实际落 ~/.zheng/data/，本地遗留的也不提交）──
+data/
+orders.json
+tables.json
+codes.json
+ledger.jsonl
+image_map.json
+
+# ── 客户素材（143MB 照片/视频，不进仓库）───────────────
+assets/
+
+# ── 生成的分享卡片 ─────────────────────────────────────
+zheng_share.html
+
+# ── 环境变量 / 密钥 ─────────────────────────────────────
+.env
+
+# ── 客户分析 / 临时文件 ─────────────────────────────────
+酒水饮品_核对.xlsx
+架构图_*.html
+传播文案.md

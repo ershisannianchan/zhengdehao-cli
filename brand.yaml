@@ -1,0 +1,264 @@
+# ============================================================
+# 用途：蒸的好海鲜馆 品牌配置。换一个客户 = 复制此文件改数据，
+#       代码框架（zheng.py 等）零改动。这是「售卖下一个客户」的入口。
+# ============================================================
+
+brand:
+  name: 蒸的好海鲜馆
+  sub_name: 蒸汽海鲜（蛇口网谷店）
+  slogan: Steam is the sauce.
+  established: 2015
+  tagline: 蛇口网谷
+  uptime_years: 11
+  banner_quote: 最好的代码不需要注释。最好的海鲜不需要调味。
+  banner_rule: 蒸 → 92% 原味保留 → 一条语句做完一件事
+  fresh_label: 今日蛇口渔港直采到店
+
+# 公开联系方式（只放座机，不放个人手机号）
+contact:
+  phone: "0755-26922888"
+  address: 深圳市南山区南海大道万融大厦C座G层101
+  metro: 2号线水湾站D口步行410米
+  hours: 10:00 - 22:30 · 全年无休
+  parking: 万融大厦地下停车场，前台登记免费
+  dianping:
+    shop_id: "23995892"
+    rating: "4.8"
+    years: 11
+
+# info 命令的有序展示（中文 label，按序打印）
+info:
+  - [店名, 蒸的好海鲜馆·蒸汽海鲜（蛇口网谷店）]
+  - [地址, 深圳市南山区南海大道万融大厦C座G层101]
+  - [地铁, 2号线水湾站D口步行410米 → 看到星巴克右转，闻到海味就到了]
+  - [电话, "0755-26922888"]
+  - [营业时间, 10:00 - 22:30 · 全年无休]
+  - [大众点评, 收录11年 · 4.8分 · 0食品安全事故 · 2018必吃榜]
+  - [停车, 万融大厦地下停车场，前台登记免费]
+  - [包厢, 10 个独立包间 · 最大可容 22 人（有插座有WiFi）]
+  - [特色, 蒸汽锁鲜 · 92%原味保留 · 蛇口渔港清晨直采 · 从码头到餐桌4小时]
+  - [收费说明, 茶水费 包房10元/位·大厅6元/位 · 米饭5元/碗 · 粥底（白粥/杂粮/排骨）28-38元/份]
+
+# 品牌叙事三章（蒸/鲜/味）
+story:
+  蒸: |
+    2015年，一个做了15年海鲜的师傅在蛇口开了家店。
+    他只定了一条规则：蒸。
+
+    不是因为他不会炒、不会炸、不会焗。
+    是因为他全试过了。
+
+    煎会让虾肉收紧，炸会破坏鱼皮，烤会带走水分，
+    焗的酱汁把蟹的甜味盖得一丝不剩。
+
+    最后他发现：
+    什么都不加，蒸汽均匀包裹90秒——
+    那条东星斑自己会说话。
+
+    "最好的代码是最短的那行。
+     最好的做法是什么都不做。"
+
+    他决定只做一件事。然后做了11年。
+  鲜: |
+    每天早上5:40，蛇口渔港的船靠岸。
+    6:00，师傅已经在码头挑货。
+    8:00，海鲜进店，入缸，还在动。
+    10:00，你坐下来，它们还在动。
+
+    这个链路跑了4000多天，没断过。
+
+    为什么不开分店？
+    "分店能保证渔港直采吗？
+     不能的话，就是在代码里写hardcode。
+     我拒绝。"
+
+    蛇口渔港 → 万融大厦 = 4.2公里。
+    "比你的CDN到用户还近。"
+  味: |
+    海鲜自己有味。
+    蒜蓉是辅助，酱油是可选参数，辣椒是第三方插件。
+    核心逻辑只有一条：蒸。
+
+    蒸汽温度恒定102°C，锁住92%的游离氨基酸。
+    数据来自深圳质检院的检测报告。
+    （对，我们真测过。不信你来看报告。）
+
+    你吃到的每一口，
+    是蛇口的盐度、渔港的潮汐、和那个师傅11年前的决定。
+
+    点评4.8分。
+    11年。
+    0食品安全事故。
+
+    没有bug。
+
+# 金句轮播池（每次启动随机一句）
+quotes:
+  - zh: 蒸的好，不调味。
+    en: Steam is the sauce.
+  - zh: 你debug了半天发现bug是自己。我们试了所有做法，发现最好的调料是——什么都不放。
+    en: The best seasoning is no seasoning.
+  - zh: 就像不在PR里加无关代码。我们不在海鲜上刷厚酱。
+    en: No dead code. No heavy sauce.
+  - zh: 最简单的方案往往是最优解。蒸 = O(1)。
+    en: Steaming is O(1).
+  - zh: 蛇口渔港 → 餐桌 = 4小时。比你的CI pipeline还快。
+    en: 4 hours from pier to plate.
+  - zh: 点评4.8分，11年，0食品安全事故。这个uptime你服不服。
+    en: 11 years uptime. Zero incidents.
+  - zh: 为什么只蒸？和为什么只用vim是一个道理。
+    en: Why steam only? Same reason you use vim.
+  - zh: 复杂调味 = 技术债。蒸汽锁鲜 = 纯函数。
+    en: Heavy seasoning is tech debt. Steam is a pure function.
+
+# 正式菜单：9 分类 · 115 道（price: null 表示时价）
+menu:
+  餐前凉菜:
+    - {id: L01, name: 麻辣牛肉, price: 48, unit: 份, desc: 鲜香下饭}
+    - {id: L02, name: 爽口鱼皮, price: 38, unit: 份, desc: 爽脆弹牙}
+    - {id: L03, name: 无骨乌鸡凤爪, price: 38, unit: 份, desc: 去骨入味}
+    - {id: L04, name: 东北拍黄瓜, price: 18, unit: 份, desc: 清爽解腻}
+    - {id: L05, name: 凉拌云耳, price: 18, unit: 份, desc: 爽口木耳}
+    - {id: L06, name: 捞汁葫芦丝, price: 38, unit: 份, desc: 鲜嫩弹牙}
+    - {id: L07, name: 凉拌鹌鹑皮蛋, price: 38, unit: 份, desc: 溏心皮蛋}
+    - {id: L08, name: 老醋海蜇头, price: 38, unit: 份, desc: 酸爽脆嫩}
+    - {id: L09, name: 开胃茴香头, price: 38, unit: 份, desc: 口感鲜香浓郁}
+    - {id: L10, name: 开胃酸萝卜, price: 18, unit: 份, desc: 开胃解腻}
+    - {id: L11, name: 炸花生, price: 18, unit: 份, desc: 下酒小食}
+    - {id: L12, name: 凉拌藕尖, price: 28, unit: 份, desc: 清甜爽脆}
+    - {id: L13, name: 醋泡花生, price: 28, unit: 份, desc: 香脆入味}
+  粤式烧卤:
+    - {id: S01, name: 秘制老鹅头, price: 368, unit: 条, desc: 卤香浓郁}
+    - {id: S02, name: 脆皮香茅乳鸽, price: 48, unit: 只, desc: 皮脆肉嫩·香茅风味, hot: true}
+    - {id: S03, name: 秘制卤鹅掌, price: 88, unit: 只, desc: 胶质满满}
+    - {id: S04, name: 秘制卤鹅翅, price: 88, unit: 只, desc: 卤香入味}
+    - {id: S05, name: 卤水掌亦双拼, price: 168, unit: 份, desc: 掌翅双拼}
+  燕鲍参翅:
+    - {id: B01, name: 鲍汁扣8头鲍鱼, price: 188, unit: 位, desc: 齿唇留香·鲍汁浓郁, hot: true}
+    - {id: B02, name: 藜米煮辽参, price: 158, unit: 位, desc: 藜麦辽参同煮}
+    - {id: B03, name: 冰糖三色燕窝, price: 298, unit: 位, desc: 滋润养颜}
+    - {id: B04, name: 燕麦扣辽参, price: 158, unit: 位, desc: 燕麦软糯·辽参Q弹, hot: true}
+    - {id: B05, name: 红烧牙拣鱼翅, price: 268, unit: 位, desc: 经典红烧}
+  刺身系列:
+    - {id: M01, name: 三文鱼刺身, price: 168, unit: 例, desc: 厚切肥美, hot: true}
+    - {id: M02, name: 北极贝刺身, price: 168, unit: 例, desc: 爽脆鲜甜}
+    - {id: M03, name: 澳洲龙虾刺身, price: null, unit: 时价, desc: 预定·鲜活现切}
+    - {id: M04, name: 象拔蚌刺身, price: null, unit: 时价, desc: 即点即杀·爽脆}
+    - {id: M05, name: 黑松露捞起三文鱼, price: 168, unit: 例, desc: 软糯入口即化, hot: true}
+    - {id: M06, name: 冰镇木耳, price: 38, unit: 例, desc: 冰爽脆嫩}
+    - {id: M07, name: 冰镇秋葵, price: 38, unit: 例, desc: 爽口解腻}
+    - {id: M08, name: 锦绣刺身拼盘, price: 298, unit: 例, desc: 多种刺身组合}
+    - {id: M09, name: 冰镇辽参, price: 158, unit: 条, desc: 2条起点·冰镇爽口}
+  生猛海鲜:
+    - {id: H01, name: 波士顿龙虾, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H02, name: 富贵虾, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H03, name: 花金古, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H04, name: 龙趸, price: null, unit: 时价, desc: 深海大鱼·宴请首选}
+    - {id: H05, name: 东星斑, price: null, unit: 时价, desc: 清蒸·深海石斑鱼, hot: true}
+    - {id: H06, name: 老虎斑, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H07, name: 青斑, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H08, name: 海红斑, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H09, name: 金石蚌, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H10, name: 蓝瓜子, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H11, name: 泥猛, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H12, name: 大花虾, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H13, name: 龙虾仔, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H14, name: 基围虾, price: null, unit: 时价, desc: 蒸汽·蒜蓉经典}
+    - {id: H15, name: 九节虾, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H16, name: 大元贝, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H17, name: 松叶蟹, price: null, unit: 时价, desc: 清蒸·蟹肉鲜甜}
+    - {id: H18, name: 珍宝蟹, price: null, unit: 时价, desc: 清蒸·蟹肉饱满}
+    - {id: H19, name: 本地膏蟹, price: null, unit: 时价, desc: 膏满黄肥}
+    - {id: H20, name: 野生大花螺, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H21, name: 面蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H22, name: 三点蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H23, name: 奄仔蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H24, name: 海螺, price: null, unit: 时价, desc: 白灼·鲜甜}
+    - {id: H25, name: 花螺, price: null, unit: 时价, desc: 白灼·鲜甜}
+    - {id: H26, name: 红蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H27, name: 雪蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H28, name: 冬蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H29, name: 带子, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H30, name: 生蚝, price: null, unit: 时价, desc: 蒸汽·肥美多汁}
+    - {id: H31, name: 蚌仔, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H32, name: 花甲王, price: null, unit: 时价, desc: 蒸汽·鲜嫩多汁}
+    - {id: H33, name: 大连鲍, price: null, unit: 时价, desc: 蒸汽·蒜蓉/清蒸}
+    - {id: H34, name: 北极贝, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H35, name: 阿拉斯加帝王蟹, price: null, unit: 时价, desc: 清蒸/蒜蓉/避风塘/椒盐/冰镇·一蟹多吃, hot: true}
+    - {id: H36, name: 澳洲大龙虾, price: null, unit: 时价, desc: 预定·清蒸/刺身/芝士伊面焗}
+    - {id: H37, name: 冻帝王蟹, price: null, unit: 时价, desc: 生猛海鲜·鲜活}
+    - {id: H38, name: 炭烤大响螺, price: null, unit: 时价, desc: 预定·如溏心干鲍般柔韧, hot: true}
+  经典小炒:
+    - {id: C01, name: 隔水蒸果园鸡, price: 98, unit: 半只, desc: 肉香嫩滑 · 全只¥188}
+    - {id: C02, name: 七味盐插虾, price: 68, unit: 例, desc: 咸香酥脆, hot: true}
+    - {id: C03, name: 酸笋鲜椒炒牛柳, price: 88, unit: 例, desc: 酸辣开胃}
+    - {id: C04, name: 孜然烤羊排, price: 198, unit: 例, desc: 皮酥肉嫩·味香浓郁, hot: true}
+    - {id: C05, name: 有机辣椒炒肉, price: 68, unit: 例, desc: 又香又辣超下饭}
+    - {id: C06, name: 干煎豆腐, price: 28, unit: 例, desc: 外焦里嫩}
+    - {id: C07, name: 鸡汤木耳, price: 38, unit: 例, desc: 鸡汤提鲜}
+    - {id: C08, name: 酸汤肥牛, price: 88, unit: 例, desc: 酸辣汤底}
+    - {id: C09, name: 鸡软骨, price: 58, unit: 例, desc: 椒盐/美极}
+    - {id: C10, name: 京葱爆辽参, price: 298, unit: 例, desc: 葱香浓郁·齿唇留香, hot: true}
+    - {id: C11, name: 百香果蒸大连鲍, price: null, unit: 时价, desc: 6只起·果香清爽}
+    - {id: C12, name: 香芹木耳炒淮山, price: 48, unit: 例, desc: 清爽脆嫩}
+    - {id: C13, name: 鸡汤凉瓜青, price: 38, unit: 例, desc: 甘凉回甜}
+    - {id: C14, name: 姜葱土鸡煲, price: 108, unit: 例, desc: 香辣·姜葱入味}
+    - {id: C15, name: 芥兰苗炒牛肉, price: 68, unit: 例, desc: 清爽下饭}
+    - {id: C16, name: 大连鲍土鸡煲, price: 188, unit: 例, desc: 鲍鱼土鸡同煲}
+  健康时蔬:
+    - {id: V01, name: 空心菜, price: 28, unit: 例, desc: 普宁豆酱/蒜蓉/猪油炒}
+    - {id: V02, name: 油麦菜, price: 28, unit: 例, desc: 蒜蓉/猪油/清炒}
+    - {id: V03, name: 红薯叶, price: 28, unit: 例, desc: 普宁豆酱/蒜蓉/猪油炒}
+    - {id: V04, name: 菜心, price: 28, unit: 例, desc: 豆豉鲮鱼/蒜蓉/猪油炒}
+    - {id: V05, name: 丝瓜, price: 18, unit: 例, desc: 上汤/蒜蓉/猪油}
+    - {id: V06, name: 西兰花, price: 18, unit: 例, desc: 蒜蓉/清炒}
+    - {id: V07, name: 娃娃菜, price: 28, unit: 例, desc: 猪油/清炒/蒜蓉/姜汁}
+    - {id: V08, name: 贝贝瓜, price: 18, unit: 例, desc: 粉糯清甜}
+    - {id: V09, name: 杂粮拼, price: 38, unit: 份, desc: 粗粮健康}
+    - {id: V10, name: 芥兰苗, price: 28, unit: 例, desc: 清爽脆嫩}
+    - {id: V11, name: 生菜, price: 28, unit: 例, desc: 蒜蓉/清炒}
+  精美主食:
+    - {id: R01, name: 墨鱼汁海鲜炒饭, price: 58, unit: 例, desc: 墨鱼汁·口感饱满}
+    - {id: R02, name: 扬州炒饭, price: 48, unit: 例, desc: 粒粒分明}
+    - {id: R03, name: 海鲜炒饭, price: 48, unit: 例, desc: 鲜香入味}
+    - {id: R04, name: 干炒牛河, price: 38, unit: 例, desc: 河粉爽滑筋道}
+    - {id: R05, name: 豉油皇炒面, price: 38, unit: 例, desc: 豉油焦香}
+    - {id: R06, name: 肉丝炒米粉, price: 38, unit: 例, desc: 三丝·锅气足}
+    - {id: R07, name: 湿炒牛河, price: 48, unit: 例, desc: 滑嫩带汁}
+    - {id: R08, name: 香煎墨鱼饼, price: 68, unit: 例, desc: 弹牙鲜甜}
+    - {id: R09, name: 手工咸蛋卷, price: 38, unit: 例, desc: 咸香酥脆}
+    - {id: R10, name: 潮州粉粿, price: 38, unit: 例, desc: 香煎/蒸}
+  甜品点心:
+    - {id: D01, name: 大福, price: 28, unit: 例, desc: 榴莲/芒果味}
+    - {id: D02, name: 芝士珍珠豆腐花, price: 18, unit: 位, desc: 滑嫩芝士香}
+    - {id: D03, name: 反沙芋头, price: 48, unit: 例, desc: 满口酥脆}
+    - {id: D04, name: 潮州炸果肉, price: 38, unit: 例, desc: 香酥可口}
+    - {id: D05, name: 咸蛋卷拼炸果肉, price: 68, unit: 例, desc: 双拼}
+    - {id: D06, name: 手工核桃包, price: 22, unit: 半打, desc: 42元/打}
+    - {id: D07, name: 芋泥绿茶饼, price: 18, unit: 半打, desc: 36元/打}
+    - {id: D08, name: 奶香金银馒头, price: 11, unit: 半打, desc: 22元/打}
+
+# 桌位（预订系统用）
+tables:
+  T01: {name: 大厅1号桌, seats: 2, available: true}
+  T02: {name: 大厅2号桌, seats: 4, available: true}
+  T03: {name: 大厅3号桌, seats: 6, available: false}
+  T04: {name: 包厢A（海景）, seats: 8, available: true, note: 靠窗，信号满格}
+  T05: {name: 包厢B（商务）, seats: 10, available: true, note: 有插座，有WiFi}
+  T06: {name: 包厢C（宴会）, seats: 20, available: false}
+
+# 暗号（优惠券）规则
+coupon:
+  prefix: [STEAM, ZHENG, 原味, 锁鲜, 蛇口]
+  discount: 全场8折
+  valid_days: 7
+  # HMAC 签名密钥：部署到新客户时请更换（私有仓库默认安全）
+  secret_key: "***REMOVED***"
+
+# 今日直采海鲜池（banner 随机展示）
+fresh_choices:
+  - 东星斑
+  - 象拔蚌
+  - 花甲王
+  - 波士顿龙虾
+  - 珍宝蟹
