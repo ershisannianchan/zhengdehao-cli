@@ -253,7 +253,7 @@ coupon:
   discount: 全场8折
   valid_days: 7
   # HMAC 签名密钥：部署到新客户时请更换（私有仓库默认安全）
-  secret_key: "***REMOVED***"
+  secret_key: "REDACTED_SECRET_KEY"
 
 # 今日直采海鲜池（banner 随机展示）
 fresh_choices:
