@@ -8,6 +8,8 @@ import os
 
 import yaml
 
+import storage
+
 
 class Brand:
     """品牌配置的结构化访问。数据来自 brand.yaml，代码不绑定具体品牌。"""
@@ -43,6 +45,26 @@ class Brand:
     @property
     def coupon(self):
         return self.data.get("coupon", {})
+
+    @property
+    def secret_key(self):
+        """暗号/预订码的 HMAC 签名密钥。
+
+        查找顺序：ZHENG_SECRET 环境变量 > ~/.zheng/secret 文件 > brand.yaml。
+        真密钥不进仓库——yaml 里只留占位符，部署时用环境变量或本地文件注入。
+        泄露后果：任何人可伪造暗号，商家端验签会认成真码。
+        """
+        env = (os.environ.get("ZHENG_SECRET") or "").strip()
+        if env:
+            return env
+        try:
+            with open(os.path.join(storage.config_dir(), "secret"), "r", encoding="utf-8") as f:
+                local = f.read().strip()
+            if local:
+                return local
+        except (IOError, OSError):
+            pass  # 无本地密钥文件时回落到 yaml
+        return self.coupon.get("secret_key", "")
 
     @property
     def fresh_choices(self):

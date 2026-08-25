@@ -253,8 +253,13 @@ coupon:
   discount: 全场8折
   exclude: 不含团购/套餐 · 特价菜 · 酒水
   valid_days: 7
-  # HMAC 签名密钥：部署到新客户时请更换（私有仓库默认安全）
-  secret_key: "REDACTED_SECRET_KEY"
+  # HMAC 签名密钥：真值不进仓库！
+  # 注入方式（优先级从高到低）：
+  #   1. 环境变量 ZHENG_SECRET
+  #   2. ~/.zheng/secret 文件（推荐，本机部署用这个）
+  #   3. 下面这行占位符（仅供无密钥时跑通流程，切勿用于生产）
+  # 新客户部署：python -c "import secrets;print(secrets.token_hex(16))" > ~/.zheng/secret
+  secret_key: "CHANGE_ME_See_README_Secret_Setup"
 
 # 今日直采海鲜池（banner 随机展示）
 fresh_choices:

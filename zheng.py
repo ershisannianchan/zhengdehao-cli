@@ -202,21 +202,21 @@ BACKEND = codes.LocalFileBackend()
 
 def generate_secret_code(date_str=None):
     """生成签名暗号（带品牌 secret 与前缀）"""
-    return codes.generate_code(date_str, BRAND.coupon.get("secret_key", ""), BRAND.coupon.get("prefix", []))
+    return codes.generate_code(date_str, BRAND.secret_key, BRAND.coupon.get("prefix", []))
 
 
 def generate_booking_code(date_str=None):
-    return codes.generate_booking_code(date_str, BRAND.coupon.get("secret_key", ""))
+    return codes.generate_booking_code(date_str, BRAND.secret_key)
 
 
 def verify_code(secret):
-    return codes.verify_code(secret, BRAND.coupon.get("secret_key", ""),
+    return codes.verify_code(secret, BRAND.secret_key,
                              BRAND.coupon.get("prefix", []),
                              BRAND.coupon.get("valid_days", 7))
 
 
 def verify_booking_code(secret):
-    return codes.verify_booking_code(secret, BRAND.coupon.get("secret_key", ""))
+    return codes.verify_booking_code(secret, BRAND.secret_key)
 
 
 # ============================================================

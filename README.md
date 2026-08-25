@@ -67,20 +67,44 @@ zheng_share.py # 分享卡片
 所有运行时数据（订单 / 桌位 / 暗号 / 核销日志）统一落 `~/.zheng/data/`，
 可用环境变量 `ZHENG_HOME` 覆盖根目录。不再写包目录，升级不丢数据。
 
+## 签名密钥怎么配（必读）
+
+暗号和预订码用 HMAC 签名。**密钥泄露 = 任何人都能伪造折扣码，收银端验签会认成真码**，
+所以真密钥永远不进仓库，`brand.yaml` 里只放占位符。
+
+查找顺序（优先级从高到低）：
+
+| 来源 | 用途 |
+|------|------|
+| `ZHENG_SECRET` 环境变量 | CI / 容器 / 临时覆盖 |
+| `~/.zheng/secret` 文件 | **本机部署推荐** |
+| `brand.yaml` 的 `coupon.secret_key` | 占位符兜底，切勿用于生产 |
+
+首次部署：
+
+```bash
+python -c "import secrets; print(secrets.token_hex(16))" > ~/.zheng/secret
+```
+
+⚠️ 换密钥会让**所有已发出的旧码立即失效**。物料印刷、门店投放之前换，成本为零；
+投放之后再换，等于台卡上印的码全废。
+
 ## 换客户 / 售卖入口
 
 ```bash
 # 1. 复制一份品牌配置
 cp brand.yaml 新客户.yaml
 
-# 2. 改数据（店名/菜单/电话/点评ID/暗号密钥）
-#    注意：coupon.secret_key 必须更换为新客户专属密钥
+# 2. 改数据（店名/菜单/电话/点评ID）
 
-# 3. 用环境变量指定配置启动
+# 3. 给这个客户生成独立密钥（各客户密钥不同 → 暗号互不可伪造）
+python -c "import secrets; print(secrets.token_hex(16))" > ~/.zheng/secret
+
+# 4. 用环境变量指定配置启动
 ZHENG_BRAND=新客户.yaml zheng menu
 ```
 
-一套框架，N 个客户各一份 yaml。密钥不同则暗号互相不可伪造。
+一套框架，N 个客户各一份 yaml。
 
 ## 命令速查
 
