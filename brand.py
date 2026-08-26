@@ -64,7 +64,11 @@ class Brand:
                 return local
         except (IOError, OSError):
             pass  # 无本地密钥文件时回落到 yaml
-        return self.coupon.get("secret_key", "")
+        yaml_val = self.coupon.get("secret_key", "")
+        # 占位符兜底 = 无有效密钥：返回空，拒绝用公开占位符签名（否则任何人可伪造码）
+        if yaml_val.startswith("CHANGE_ME"):
+            return ""
+        return yaml_val
 
     @property
     def fresh_choices(self):

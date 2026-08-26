@@ -207,9 +207,14 @@ class LocalFileBackend(Backend):
                       "ts": datetime.datetime.now().isoformat(), "meta": meta or {}})
 
     def stats(self):
-        """统计：发码数 / 有效核销数（30 天后可回答「有没有用」）"""
+        """统计会员码数据闭环：发码数 / 核销次数 / 唯一顾客 / 回头率。
+
+        会员码可复用，「核销率=redeemed/issued」会 >100% 失去意义，
+        改看「回头率」= 核销过 2 次以上的码数占唯一码数的比例。
+        """
         issued = 0
         redeemed = 0
+        code_redeems = {}  # 码 -> 核销次数
         if os.path.exists(self.path):
             with open(self.path, "r", encoding="utf-8") as f:
                 for line in f:
@@ -224,4 +229,16 @@ class LocalFileBackend(Backend):
                         issued += 1
                     elif e.get("event") == "redeem" and e.get("ok"):
                         redeemed += 1
-        return {"issued": issued, "redeemed": redeemed}
+                        c = e.get("code", "")
+                        code_redeems[c] = code_redeems.get(c, 0) + 1
+        unique = len(code_redeems)  # 唯一被核销的码 ≈ 唯一顾客数
+        repeat = sum(1 for n in code_redeems.values() if n > 1)  # 回头客数（核销>1次的码）
+        repeat_visits = sum(n - 1 for n in code_redeems.values() if n > 1)  # 回头次数
+        return {
+            "issued": issued,
+            "redeemed": redeemed,
+            "unique": unique,
+            "repeat": repeat,
+            "repeat_rate": repeat / unique if unique else 0.0,
+            "repeat_visits": repeat_visits,
+        }

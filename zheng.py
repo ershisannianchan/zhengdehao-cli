@@ -1038,22 +1038,23 @@ def verify(code_arg):
 # ----------------------------------------------------------
 @cli.command()
 def stats():
-    """📊 营销数据：发码数 / 核销数（数据闭环，回答「有没有用」）"""
+    """📊 营销数据：发码 / 核销 / 回头率（会员码数据闭环）"""
     banner()
     print(c("  📊 营销数据", "bold"))
     divider()
     s = BACKEND.stats()
-    print(c(f"  发放暗号：{s['issued']} 个", "white"))
-    print(c(f"  有效核销：{s['redeemed']} 个", "white"))
-    if s["issued"]:
-        rate = s["redeemed"] / s["issued"] * 100
-        color = "green" if rate > 0 else "yellow"
-        print(c(f"  核销率：{rate:.1f}%", color))
+    print(c(f"  发放会员码：{s['issued']} 个", "white"))
+    print(c(f"  核销总次数：{s['redeemed']} 次", "white"))
+    print(c(f"  唯一顾客：{s['unique']} 人", "white"))
+    if s["unique"]:
+        color = "green" if s["repeat"] else "yellow"
+        print(c(f"  回头客：{s['repeat']} 人（回头率 {s['repeat_rate']*100:.0f}%）", color))
+        print(c(f"  回头次数：{s['repeat_visits']} 次", "white"))
     else:
-        print(c("  核销率：—（暂无发码记录）", "yellow"))
+        print(c("  回头率：—（暂无核销记录）", "yellow"))
     print()
     print(c("  💡 数据来源：~/.zheng/data/ledger.jsonl（本地核销日志）", "cyan"))
-    print(c("  💡 每次发码/核销自动记录，可统计 CLI 带来的真实转化", "cyan"))
+    print(c("  💡 回头率 = 核销过 2 次以上的码占唯一码的比例（会员码可复用）", "cyan"))
     print()
 
 
