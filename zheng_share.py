@@ -27,6 +27,7 @@ def card_text():
     fresh = random.choice(BRAND.fresh_choices) if BRAND.fresh_choices else ""
     secret = get_or_create_member_code()
     hot = [i for cat in BRAND.menu.values() for i in cat if i.get("hot") and i["price"] is not None][:2]
+    hot_line = "🍽 必点：" + " · ".join(f"{i['name']} ¥{i['price']}" for i in hot) if hot else "🍽 招牌菜详见菜单"
     discount = BRAND.coupon.get("discount", "全场8折")
     exclude = BRAND.coupon.get("exclude", "")
     lines = [
@@ -36,7 +37,7 @@ def card_text():
         f"「{quote.get('zh', '')}」",
         "──────────────",
         f"🔥 今日直采：{fresh}",
-        f"🍽 必点：{hot[0]['name']} ¥{hot[0]['price']} · {hot[1]['name']} ¥{hot[1]['price']}",
+        hot_line,
         "──────────────",
         f"🎟️ 专属会员码：{secret}",
         f"📍 到店报码 → {discount}（{exclude}）· 长期有效不限次数",
@@ -92,6 +93,11 @@ def share():
     divider()
 
     card_lines, secret = card_text()
+    if not secret:
+        print(c("  ❌ 未配置签名密钥，无法生成会员码", "red"))
+        print(c("  💡 请设置 ZHENG_SECRET 环境变量，或写入 ~/.zheng/secret", "yellow"))
+        print()
+        return
     qr_lines = qr_ascii_lines(BRAND.dianping_url)
 
     print()

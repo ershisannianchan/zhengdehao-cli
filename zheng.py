@@ -439,7 +439,8 @@ def story(part):
     parts = [part] if part else chapters
     for i, p in enumerate(parts):
         ch_num = chapters.index(p)
-        print(c(f"\n  ═══ 第{'一二三'[ch_num]}章 · {p} ═══\n", "yellow"))
+        ch_label = "一二三四五六七八九十"[ch_num] if ch_num < 10 else str(ch_num + 1)
+        print(c(f"\n  ═══ 第{ch_label}章 · {p} ═══\n", "yellow"))
         for line in BRAND.story[p].strip().split("\n"):
             line = line.strip()
             if line.startswith('"') and line.endswith('"'):
@@ -585,7 +586,13 @@ def book(date, booking_time, persons_arg, persons, table_type, name, phone):
 
     today_str = datetime.date.today().isoformat()
 
-    if not date:
+    if date:
+        parsed = parse_date(date)
+        if not parsed:
+            print(c("  ❌ 日期格式无效，试试 8.1 / 8/1 / 801 / 2026-08-01", "red"))
+            return
+        date = parsed
+    else:
         while True:
             raw = click.prompt(c("  日期", "yellow"), default=today_str, show_default=True)
             parsed = parse_date(raw)
@@ -596,7 +603,12 @@ def book(date, booking_time, persons_arg, persons, table_type, name, phone):
     print(c(f"  📅 {date}", "white"))
 
     SLOTS = ["11:00", "11:30", "12:00", "12:30", "17:30", "18:00", "18:30", "19:00", "19:30", "20:00"]
-    if not booking_time:
+    if booking_time:
+        booking_time = booking_time.replace("：", ":").replace("∶", ":")
+        if booking_time not in SLOTS:
+            print(c(f"  ❌ 可选时段：{', '.join(SLOTS)}", "red"))
+            return
+    else:
         print(c(f"  时段：{'  '.join(SLOTS[:5])}", "cyan"))
         print(c(f"        {'  '.join(SLOTS[5:])}", "cyan"))
         while True:
@@ -907,7 +919,7 @@ def dishes():
     divider()
     path = ASSETS["dishes"]["path"]
     if not os.path.exists(path):
-        print(c("  ❌ 无菜品照片目录：{path}", "red"))
+        print(c(f"  ❌ 无菜品照片目录：{path}", "red"))
         return
     files = [f for f in os.listdir(path)
              if f.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"))]
