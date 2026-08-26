@@ -632,7 +632,7 @@ def book(date, booking_time, persons_arg, persons, table_type, name, phone):
     else:
         persons = parse_persons(str(persons))
         if not persons or not (1 <= persons <= 20):
-            print(c(f"  ❌ 人数无效，请用 2-20 的整数，如 8 / 8人", "red"))
+            print(c(f"  ❌ 人数无效，请用 1-20 的整数，如 8 / 8人", "red"))
             return
     print(c(f"  👥 {persons}人", "white"))
 
