@@ -1,6 +1,6 @@
 // 用途：落地页「领专属会员码」的服务端函数（Vercel Serverless）。
 // 密钥从环境变量 ZHENG_SECRET 读，绝不进前端。签名算法与 CLI codes.py 一致。
-// 手机号：POST body 传，SHA256 哈希后存 KV（不存明文，回头率用哈希去重）。
+// 手机号：POST body 传，HMAC(secret) 哈希后存 KV（不存明文，回头率用哈希去重）。
 // 前缀：从 ZHENG_PREFIXES 环境变量读（逗号分隔），与 brand.yaml coupon.prefix 保持一致。
 const crypto = require("crypto");
 
@@ -56,6 +56,12 @@ async function kvSet(key, value) {
 
 module.exports = async function handler(req, res) {
   res.setHeader("Content-Type", "application/json; charset=utf-8");
+
+  // 轻量防刷：拒绝无 Referer 的跨站脚本（挡 curl 级别，不挡伪造 header 的高级脚本）
+  const referer = req.headers && req.headers.referer;
+  if (!referer || !referer.includes(".vercel.app")) {
+    return res.status(403).json({ ok: false, error: "请从门店落地页领码" });
+  }
 
   const secret = process.env.ZHENG_SECRET;
   if (!secret) {
