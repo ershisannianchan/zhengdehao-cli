@@ -9,6 +9,7 @@ import datetime
 import os
 import random
 import re
+import subprocess
 import sys
 import time
 import webbrowser
@@ -871,14 +872,14 @@ def view(target):
         images = [f for f in os.listdir(path)
                   if f.lower().endswith((".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"))]
         if images:
-            os.startfile(path)
+            open_file(path)
             print(c(f"  {len(images)} 张照片 · 可左右切换浏览", "white"))
         else:
-            os.startfile(path)
+            open_file(path)
             print(c(f"  空文件夹", "white"))
     else:
         if os.path.exists(path):
-            os.startfile(path)
+            open_file(path)
             print(c(f"  {asset['name']}", "white"))
 
     print()
@@ -902,7 +903,7 @@ def img(item_id):
     path = os.path.join(ASSETS_DIR, "dishes", fname)
     if os.path.exists(path):
         try:
-            os.startfile(path)
+            open_file(path)
             print(c(f"  📷 {item['name']}：{fname}", "green"))
         except OSError:
             print(c(f"  🔗 {path}", "cyan"))
@@ -996,24 +997,46 @@ def code(verify, share):
     print()
 
 
+def open_file(path):
+    """跨平台打开文件/文件夹：Windows startfile / macOS open / Linux xdg-open"""
+    if sys.platform == "win32":
+        os.startfile(path)
+    elif sys.platform == "darwin":
+        subprocess.call(["open", path])
+    else:
+        subprocess.call(["xdg-open", path])
+
+
 def _copy_to_clipboard(text):
-    """复制文本到剪贴板（ctypes 调 Windows API，无额外依赖）"""
-    if sys.platform != "win32":
-        print(c("  （当前系统非 Windows，请手动复制文案）", "yellow"))
-        return
+    """复制文本到剪贴板：Windows(ctypes) / macOS(pbcopy) / Linux(xclip/xsel)"""
     try:
-        import ctypes
-        CF_UNICODETEXT = 13
-        data = text.encode("utf-16-le") + b"\x00\x00"
-        h = ctypes.windll.kernel32.GlobalAlloc(0x0042, len(data))
-        p = ctypes.windll.kernel32.GlobalLock(h)
-        ctypes.memmove(p, data, len(data))
-        ctypes.windll.kernel32.GlobalUnlock(h)
-        if not ctypes.windll.user32.OpenClipboard(None):
-            raise OSError("open clipboard failed")
-        ctypes.windll.user32.EmptyClipboard()
-        ctypes.windll.user32.SetClipboardData(CF_UNICODETEXT, h)
-        ctypes.windll.user32.CloseClipboard()
+        if sys.platform == "win32":
+            import ctypes
+            CF_UNICODETEXT = 13
+            data = text.encode("utf-16-le") + b"\x00\x00"
+            h = ctypes.windll.kernel32.GlobalAlloc(0x0042, len(data))
+            p = ctypes.windll.kernel32.GlobalLock(h)
+            ctypes.memmove(p, data, len(data))
+            ctypes.windll.kernel32.GlobalUnlock(h)
+            if not ctypes.windll.user32.OpenClipboard(None):
+                raise OSError("open clipboard failed")
+            ctypes.windll.user32.EmptyClipboard()
+            ctypes.windll.user32.SetClipboardData(CF_UNICODETEXT, h)
+            ctypes.windll.user32.CloseClipboard()
+        elif sys.platform == "darwin":
+            subprocess.run(["pbcopy"], input=text.encode("utf-8"), check=True)
+        else:
+            copied = False
+            for cmd in (["xclip", "-selection", "clipboard"], ["xsel", "--clipboard", "--input"]):
+                try:
+                    subprocess.run(cmd, input=text.encode("utf-8"), check=True)
+                    copied = True
+                    break
+                except FileNotFoundError:
+                    continue
+            if not copied:
+                print(c("  （未安装 xclip/xsel，请手动复制文案）", "yellow"))
+                return
         print(c("  ✅ 已复制到剪贴板", "green"))
     except Exception:
         print(c("  （未能自动复制，请手动选择文案复制）", "yellow"))
