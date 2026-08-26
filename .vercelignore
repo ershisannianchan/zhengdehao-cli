@@ -1,0 +1,31 @@
+# Python 清单文件（pyproject.toml 会让 Vercel 误判 Python runtime，必须排除）
+pyproject.toml
+*.py
+__pycache__/
+.pytest_cache/
+
+# 客户素材（143MB，不进仓库也不上线）
+assets/
+
+# 品牌数据 & 测试
+brand.yaml
+LICENSE
+tests/
+
+# 文档
+*.md
+SKILL.md
+
+# 本地 HTML 物料（只保留 index.html 上线）
+落地页.html
+架构图_*.html
+线下推广脑图.html
+
+# 本地文件
+传播文案.md
+酒水饮品_核对.xlsx
+
+# git / vercel
+.git/
+.gitignore
+.vercel/
