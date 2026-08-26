@@ -72,8 +72,6 @@
   .foot .row b{color:var(--cyan);}
   .foot .dianping{color:var(--green);}
 
-  .cursor{display:inline-block; width:8px; height:15px; background:var(--green); vertical-align:-2px; animation:blink 1s steps(1) infinite;}
-  @keyframes blink{50%{opacity:0;}}
 </style>
 </head>
 <body>
@@ -108,13 +106,13 @@
 
     <div class="secline"></div>
 
-    <div class="cmd"><span class="p">$</span> zheng code<span class="cursor"></span></div>
+    <div class="cmd"><span class="p">$</span> zheng code</div>
     <div class="offer">
       <div class="offer-line">全场 <span class="offer-big">8</span><span class="offer-zhe">折</span></div>
       <div class="offer-rule">使用规则：不含酒水饮料、特价菜 · 不与线上代金券、套餐同享</div>
     </div>
     <div class="cta">
-      <button class="btn" id="genBtn" onclick="genCode()">领取专属会员码</button>
+      <button class="btn" id="genBtn" onclick="genCode()">点击领取专属会员码</button>
     </div>
     <div class="codebox" id="codebox">
       <div class="code" id="code"></div>
