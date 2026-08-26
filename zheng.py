@@ -221,6 +221,8 @@ def get_or_create_member_code():
     cfg = storage.load_config()
     code = cfg.get("member_code")
     if not code:
+        if not BRAND.secret_key:
+            return None  # 未配置密钥，拒绝发码（避免空密钥签发可伪造的码）
         code = generate_member_code()
         cfg["member_code"] = code
         storage.save_config(cfg)
@@ -551,7 +553,7 @@ def menu(category, show_all, hot):
 
     print()
     tip = "输入 暗号" if IN_INTERACTIVE else "zheng code"
-    print(c(f"  🔐 想领 8 折暗号 → {tip}（7天有效 · 可分享同事）", "yellow"))
+    print(c(f"  🔐 想领 8 折会员码 → {tip}（长期有效 · 不限次数）", "yellow"))
 
     print()
     print(c("  ╔══════════════════════════════════════════╗", "yellow"))
@@ -928,20 +930,28 @@ def code(verify, share):
     banner()
 
     if verify:
+        verify = (verify or "").strip().upper()
         ok, msg = verify_member_code(verify)
+        kind = "member"
         if not ok and codes.CODE_RE.match(verify):
             ok, msg = verify_code(verify)  # 兼容旧的 7 天暗号
+            kind = "coupon"
         print(c("\n  🎟️ 会员码验证", "bold"))
         divider()
         print(c(f"  码：{verify}", "yellow"))
         print(c(f"  状态：{'✅' if ok else '❌'} {msg}", "green" if ok else "red"))
-        # 记录核销尝试（数据闭环）
-        BACKEND.record_redeem(verify, ok, {"channel": "verify"})
+        # 记录核销尝试（数据闭环，kind 区分会员码/暗号）
+        BACKEND.record_redeem(verify, ok, {"channel": "verify", "kind": kind})
         print()
         return
 
     # 专属会员码：首次生成并持久化，之后复用同一个码（鼓励回头客）
     member_code = get_or_create_member_code()
+    if not member_code:
+        print(c("  ❌ 未配置签名密钥，无法发码", "red"))
+        print(c("  💡 请设置 ZHENG_SECRET 环境变量，或写入 ~/.zheng/secret", "yellow"))
+        print()
+        return
 
     W = 42
 
@@ -1017,11 +1027,11 @@ def verify(code_arg):
     elif codes.MEMBER_CODE_RE.match(code_arg):
         ok, msg = verify_member_code(code_arg)
         label = "会员码"
-        BACKEND.record_redeem(code_arg, ok, {"channel": "verify"})
+        BACKEND.record_redeem(code_arg, ok, {"channel": "verify", "kind": "member"})
     elif codes.CODE_RE.match(code_arg):
         ok, msg = verify_code(code_arg)
         label = "暗号"
-        BACKEND.record_redeem(code_arg, ok, {"channel": "verify"})
+        BACKEND.record_redeem(code_arg, ok, {"channel": "verify", "kind": "coupon"})
     else:
         print(c(f"  ❌ 无法识别：{code_arg}", "red"))
         print(c("  支持：会员码（STEAM-20260826-1234-XXXXXX）/ 暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
@@ -1043,13 +1053,13 @@ def stats():
     print(c("  📊 营销数据", "bold"))
     divider()
     s = BACKEND.stats()
-    print(c(f"  发放会员码：{s['issued']} 个", "white"))
-    print(c(f"  核销总次数：{s['redeemed']} 次", "white"))
-    print(c(f"  唯一顾客：{s['unique']} 人", "white"))
-    if s["unique"]:
-        color = "green" if s["repeat"] else "yellow"
-        print(c(f"  回头客：{s['repeat']} 人（回头率 {s['repeat_rate']*100:.0f}%）", color))
-        print(c(f"  回头次数：{s['repeat_visits']} 次", "white"))
+    print(c(f"  发放会员码：{s.get('issued', 0)} 个", "white"))
+    print(c(f"  核销总次数：{s.get('redeemed', 0)} 次", "white"))
+    print(c(f"  唯一顾客：{s.get('unique', 0)} 人", "white"))
+    if s.get("unique"):
+        color = "green" if s.get("repeat") else "yellow"
+        print(c(f"  回头客：{s.get('repeat', 0)} 人（回头率 {s.get('repeat_rate', 0)*100:.0f}%）", color))
+        print(c(f"  回头次数：{s.get('repeat_visits', 0)} 次", "white"))
     else:
         print(c("  回头率：—（暂无核销记录）", "yellow"))
     print()

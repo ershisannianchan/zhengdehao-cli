@@ -25,6 +25,8 @@ import storage
 
 def _sign(body, secret_key):
     """HMAC-SHA256 → base32 前 6 位（大写、去 padding）"""
+    if not secret_key:
+        raise ValueError("未配置签名密钥（设置 ZHENG_SECRET 或 ~/.zheng/secret）")
     digest = hmac.new(secret_key.encode("utf-8"), body.encode("utf-8"), hashlib.sha256).digest()
     return base64.b32encode(digest).decode("ascii").rstrip("=")[:6]
 
@@ -211,10 +213,11 @@ class LocalFileBackend(Backend):
 
         会员码可复用，「核销率=redeemed/issued」会 >100% 失去意义，
         改看「回头率」= 核销过 2 次以上的码数占唯一码数的比例。
+        只统计 kind=="member" 的会员码；暗号（kind=="coupon"）一次性，不参与回头率。
         """
         issued = 0
         redeemed = 0
-        code_redeems = {}  # 码 -> 核销次数
+        code_redeems = {}  # 码(规范化) -> 核销次数
         if os.path.exists(self.path):
             with open(self.path, "r", encoding="utf-8") as f:
                 for line in f:
@@ -229,9 +232,10 @@ class LocalFileBackend(Backend):
                         issued += 1
                     elif e.get("event") == "redeem" and e.get("ok"):
                         redeemed += 1
-                        c = e.get("code", "")
-                        code_redeems[c] = code_redeems.get(c, 0) + 1
-        unique = len(code_redeems)  # 唯一被核销的码 ≈ 唯一顾客数
+                        if (e.get("meta") or {}).get("kind") == "member":
+                            c = (e.get("code") or "").strip().upper()
+                            code_redeems[c] = code_redeems.get(c, 0) + 1
+        unique = len(code_redeems)  # 唯一被核销的会员码 ≈ 唯一顾客数
         repeat = sum(1 for n in code_redeems.values() if n > 1)  # 回头客数（核销>1次的码）
         repeat_visits = sum(n - 1 for n in code_redeems.values() if n > 1)  # 回头次数
         return {
