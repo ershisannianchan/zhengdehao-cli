@@ -253,6 +253,8 @@ coupon:
   discount: 全场8折
   exclude: 不含团购/套餐 · 特价菜 · 酒水
   valid_days: 7
+  # 会员码有效期（天）：默认 365。会员码与暗号不同——领一次长期复用、不限次数。
+  member_valid_days: 365
   # HMAC 签名密钥：真值不进仓库！
   # 注入方式（优先级从高到低）：
   #   1. 环境变量 ZHENG_SECRET

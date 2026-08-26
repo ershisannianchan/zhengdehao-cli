@@ -4,14 +4,13 @@
 用途：蒸的好 CLI 分享卡片生成（终端 ASCII 卡 + 二维码 + share.html 截图版），传播导向。
 注册：由 zheng.py 文件末尾 cli.add_command(...) 挂载。
 """
-import datetime
 import os
 import random
 
 import click
 import qrcode
 
-from zheng import BRAND, c, banner, divider, generate_secret_code, load_codes, save_codes
+from zheng import BRAND, c, banner, divider, get_or_create_member_code
 
 
 def qr_ascii_lines(url):
@@ -23,11 +22,10 @@ def qr_ascii_lines(url):
 
 
 def card_text():
-    """生成卡片文本行。返回 (行列表, 暗号)"""
+    """生成卡片文本行。返回 (行列表, 会员码)"""
     quote = random.choice(BRAND.quotes) if BRAND.quotes else {"zh": ""}
     fresh = random.choice(BRAND.fresh_choices) if BRAND.fresh_choices else ""
-    secret = generate_secret_code()
-    expire = (datetime.date.today() + datetime.timedelta(days=BRAND.coupon.get("valid_days", 7))).strftime("%m-%d")
+    secret = get_or_create_member_code()
     hot = [i for cat in BRAND.menu.values() for i in cat if i.get("hot") and i["price"] is not None][:2]
     discount = BRAND.coupon.get("discount", "全场8折")
     exclude = BRAND.coupon.get("exclude", "")
@@ -40,8 +38,8 @@ def card_text():
         f"🔥 今日直采：{fresh}",
         f"🍽 必点：{hot[0]['name']} ¥{hot[0]['price']} · {hot[1]['name']} ¥{hot[1]['price']}",
         "──────────────",
-        f"🔐 专属暗号：{secret}",
-        f"📞 致电 {BRAND.phone} 报暗号 → {discount}（{exclude}）· 有效至 {expire}",
+        f"🎟️ 专属会员码：{secret}",
+        f"📍 到店报码 → {discount}（{exclude}）· 长期有效不限次数",
         "──────────────",
         "📱 扫码看套餐·评价·下单：",
         BRAND.dianping_url,
@@ -74,7 +72,7 @@ def build_html(card_lines, qr_lines, secret):
   <div class="sub">Established {established} · {uptime}y uptime · 大众点评 {rating}</div>
   <pre>{card_pre}</pre>
   <div class="qr"><pre>{qr_pre}</pre></div>
-  <div class="secret">🔐 暗号：{secret}（报暗号 {discount}，{exclude} · {valid_days} 天有效）</div>
+  <div class="secret">🎟️ 会员码：{secret}（报码 {discount}，{exclude} · 长期有效）</div>
   <div class="hint">浏览器截图保存，或 Ctrl+P 导出为图片/PDF 分享</div>
 </div>
 </body>
@@ -83,7 +81,6 @@ def build_html(card_lines, qr_lines, secret):
         uptime=BRAND.uptime_years, rating=BRAND.rating, secret=secret,
         discount=BRAND.coupon.get("discount", "全场8折"),
         exclude=BRAND.coupon.get("exclude", ""),
-        valid_days=BRAND.coupon.get("valid_days", 7),
         card_pre=card_pre, qr_pre=qr_pre)
 
 
@@ -96,14 +93,6 @@ def share():
 
     card_lines, secret = card_text()
     qr_lines = qr_ascii_lines(BRAND.dianping_url)
-
-    # 记录发放暗号（本地日志；商家验证走签名，不依赖此文件）
-    try:
-        codes = load_codes()
-        codes[secret] = {"created_at": datetime.datetime.now().isoformat(), "used": False}
-        save_codes(codes)
-    except Exception:
-        pass
 
     print()
     for ln in card_lines:

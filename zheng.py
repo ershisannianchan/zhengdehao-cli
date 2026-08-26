@@ -167,14 +167,6 @@ def save_orders(orders):
     return storage.save_json(orders, storage.orders_path())
 
 
-def load_codes():
-    return storage.load_json(storage.codes_path())
-
-
-def save_codes(codes):
-    return storage.save_json(codes, storage.codes_path())
-
-
 def build_image_map():
     """扫描 assets/dishes，用菜名最长匹配文件名，运行时生成 {菜名: 文件名}。
     客户放图即自动关联（📷 标记 + zheng img），无需手工维护 image_map.json。"""
@@ -200,11 +192,6 @@ IMAGE_MAP = build_image_map()
 BACKEND = codes.LocalFileBackend()
 
 
-def generate_secret_code(date_str=None):
-    """生成签名暗号（带品牌 secret 与前缀）"""
-    return codes.generate_code(date_str, BRAND.secret_key, BRAND.coupon.get("prefix", []))
-
-
 def generate_booking_code(date_str=None):
     return codes.generate_booking_code(date_str, BRAND.secret_key)
 
@@ -217,6 +204,28 @@ def verify_code(secret):
 
 def verify_booking_code(secret):
     return codes.verify_booking_code(secret, BRAND.secret_key)
+
+
+def generate_member_code(date_str=None):
+    return codes.generate_member_code(date_str, BRAND.secret_key, BRAND.coupon.get("prefix", []))
+
+
+def verify_member_code(secret):
+    return codes.verify_member_code(secret, BRAND.secret_key,
+                                    BRAND.coupon.get("prefix", []),
+                                    BRAND.coupon.get("member_valid_days", 365))
+
+
+def get_or_create_member_code():
+    """取当前专属会员码；没有则生成、存 config、记一次 issue。code/share 共用，保证同一码。"""
+    cfg = storage.load_config()
+    code = cfg.get("member_code")
+    if not code:
+        code = generate_member_code()
+        cfg["member_code"] = code
+        storage.save_config(cfg)
+        BACKEND.record_issue(code, {"channel": "code"})
+    return code
 
 
 # ============================================================
@@ -915,28 +924,24 @@ def dishes():
 @click.option("--verify", "-v", default=None, help="验证暗号是否有效（商家端独立可验）")
 @click.option("--share", is_flag=True, help="生成分享文案并复制到剪贴板")
 def code(verify, share):
-    """🔐 专属暗号（报暗号→全场8折，7天有效，可分享裂变）"""
+    """🎟️ 专属会员码（领一次长期有效，到店报码→全场8折，不限次数）"""
     banner()
 
     if verify:
-        ok, msg = verify_code(verify)
-        print(c("\n  🔐 暗号验证", "bold"))
+        ok, msg = verify_member_code(verify)
+        if not ok and codes.CODE_RE.match(verify):
+            ok, msg = verify_code(verify)  # 兼容旧的 7 天暗号
+        print(c("\n  🎟️ 会员码验证", "bold"))
         divider()
-        print(c(f"  暗号：{verify}", "yellow"))
+        print(c(f"  码：{verify}", "yellow"))
         print(c(f"  状态：{'✅' if ok else '❌'} {msg}", "green" if ok else "red"))
         # 记录核销尝试（数据闭环）
         BACKEND.record_redeem(verify, ok, {"channel": "verify"})
         print()
         return
 
-    secret = generate_secret_code()
-    codes_ = load_codes()
-    codes_[secret] = {"created_at": datetime.datetime.now().isoformat(), "used": False}
-    save_codes(codes_)
-    # 记录发放（数据闭环）
-    BACKEND.record_issue(secret, {"channel": "code"})
-
-    expire = datetime.date.today() + datetime.timedelta(days=BRAND.coupon.get("valid_days", 7))
+    # 专属会员码：首次生成并持久化，之后复用同一个码（鼓励回头客）
+    member_code = get_or_create_member_code()
 
     W = 42
 
@@ -945,23 +950,22 @@ def code(verify, share):
 
     discount = BRAND.coupon.get("discount", "全场8折")
     exclude = BRAND.coupon.get("exclude", "")
-    print(c("\n  🔐 你的专属暗号\n", "bold"))
+    print(c("\n  🎟️ 你的专属会员码\n", "bold"))
     print(c("  ╔" + "═" * W + "╗", "yellow"))
-    print(c(_row(f"      {secret}"), "yellow"))
+    print(c(_row(f"      {member_code}"), "yellow"))
     print(c(_row(""), "yellow"))
-    print(c(_row(f"致电 {BRAND.phone} 报暗号 → {discount}"), "yellow"))
+    print(c(_row(f"到店报码 → {discount}"), "yellow"))
     print(c(_row(f"（{exclude}）"), "yellow"))
-    print(c(_row(f"有效至 {expire.strftime('%m-%d')} · 可分享给同事"), "yellow"))
+    print(c(_row(f"长期有效 · 不限次数 · 午市晚市都欢迎"), "yellow"))
     print(c("  ╚" + "═" * W + "╝", "yellow"))
     print()
-    print(c(f"  💡 商家验证：zheng code --verify {secret}", "cyan"))
+    print(c(f"  💡 商家验证：zheng code --verify {member_code}", "cyan"))
     print(c(f"  📤 分享给同事：zheng code --share", "cyan"))
 
     if share:
-        share_text = (f"🦞 请你的客——「{BRAND.name}」专属暗号：{secret}\n"
-                      f"📞 致电 {BRAND.phone} 报暗号 → {discount}（{exclude}）\n"
-                      f"⏱ 有效至 {expire.strftime('%m-%d')} · 可转给同事\n"
-                      f"📍 {BRAND.address} · {BRAND.uptime_years}年 · 点评{BRAND.rating} · {BRAND.slogan}")
+        share_text = (f"🦞 请你的客——「{BRAND.name}」专属会员码：{member_code}\n"
+                      f"📍 {BRAND.address} · {BRAND.uptime_years}年 · 点评{BRAND.rating}\n"
+                      f"🎟️ 到店报码 → {discount}（{exclude}）· 长期有效不限次数")
         print(c("\n  📤 分享文案：\n", "bold"))
         for line in share_text.split("\n"):
             print(c(f"  {line}", "white"))
@@ -999,24 +1003,28 @@ def _copy_to_clipboard(text):
 @cli.command()
 @click.argument("code_arg", required=False)
 def verify(code_arg):
-    """🔍 验证暗号 / CLI 预订码（门店端独立验证渠道）"""
+    """🔍 验证会员码 / 暗号 / CLI 预订码（门店端独立验证渠道）"""
     banner()
     if not code_arg:
         print(c("  用法：zheng verify <码>", "yellow"))
-        print(c("  支持：暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
+        print(c("  支持：会员码（STEAM-20260826-1234-XXXXXX）/ 暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
         return
     code_arg = code_arg.strip().upper()
-    # 先判预订码（ZDH 前缀更具体），否则 CODE_RE 的宽泛前缀会把它误吞为暗号
+    # 先判预订码（ZDH 前缀更具体），再判会员码（8位签发日）、暗号（4位日期）
     if codes.BOOKING_CODE_RE.match(code_arg):
         ok, msg = verify_booking_code(code_arg)
         label = "CLI 预订码"
+    elif codes.MEMBER_CODE_RE.match(code_arg):
+        ok, msg = verify_member_code(code_arg)
+        label = "会员码"
+        BACKEND.record_redeem(code_arg, ok, {"channel": "verify"})
     elif codes.CODE_RE.match(code_arg):
         ok, msg = verify_code(code_arg)
         label = "暗号"
         BACKEND.record_redeem(code_arg, ok, {"channel": "verify"})
     else:
         print(c(f"  ❌ 无法识别：{code_arg}", "red"))
-        print(c("  支持：暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
+        print(c("  支持：会员码（STEAM-20260826-1234-XXXXXX）/ 暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
         return
     print(c(f"\n  🔍 {label}验证", "bold"))
     divider()

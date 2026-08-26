@@ -129,6 +129,49 @@ def verify_booking_code(code, secret_key, today=None):
     return True, f"CLI 渠道预订 · 日期 {mmdd} · 距到店 {diff} 天"
 
 
+# ── 专属会员码（长期有效，无限次复用，鼓励回头客）─────────────
+# 与暗号（7天随机）不同：会员码首次领到后长期复用，一人一码，
+# 格式带签发年 YYYYMMDD（8位），便于精确算 365 天有效期。
+
+MEMBER_CODE_RE = re.compile(r"^([A-Z一-鿿]+)-(\d{8})-(\d{4})-([A-Z2-7]{6})$")
+
+
+def generate_member_code(date_str, secret_key, prefixes):
+    """生成专属会员码：前缀-YYYYMMDD-4位-签名。长期有效，反复用。"""
+    prefix = random.choice(prefixes)
+    d = date_str or datetime.date.today().isoformat()
+    ymd = d[:4] + d[5:7] + d[8:10]
+    digits = "".join(random.choices(string.digits, k=4))
+    body = f"{prefix}-{ymd}-{digits}"
+    return f"{body}-{_sign(body, secret_key)}"
+
+
+def verify_member_code(code, secret_key, prefixes, valid_days=365, today=None):
+    """验证会员码：签名正确且签发日距今 <= valid_days。不锁次数，可反复核销。
+    today 参数仅用于测试注入日期。"""
+    today = today or datetime.date.today()
+    code = (code or "").strip().upper()
+    m = MEMBER_CODE_RE.match(code)
+    if not m:
+        return False, "格式无效，应为 前缀-签发日-4位-签名（如 STEAM-20260826-1234-A1B2C3）"
+    prefix, ymd, digits, sig = m.groups()
+    if prefix not in [p.upper() for p in prefixes]:
+        return False, f"前缀无效（{prefix}）"
+    body = f"{prefix}-{ymd}-{digits}"
+    if not hmac.compare_digest(sig, _sign(body, secret_key)):
+        return False, "签名无效（伪造或非法码）"
+    try:
+        issue = datetime.date(int(ymd[:4]), int(ymd[4:6]), int(ymd[6:8]))
+    except ValueError:
+        return False, "签发日期无效"
+    diff = (today - issue).days
+    if diff < 0:
+        return False, f"签发日 {ymd} 在未来，无效"
+    if diff > valid_days:
+        return False, f"已过期（签发于 {ymd}，超过 {valid_days} 天）"
+    return True, f"有效会员码（签发于 {ymd}，已用 {diff} 天）"
+
+
 # ── 核销后端（数据闭环）─────────────────────────────────────
 
 class Backend:

@@ -104,11 +104,11 @@
 
     <div class="cmd"><span class="p">$</span> zheng code<span class="cursor"></span></div>
     <div class="cta">
-      <button class="btn" id="genBtn" onclick="genCode()">领取专属暗号 · 全场 8 折</button>
+      <button class="btn" id="genBtn" onclick="genCode()">领取专属会员码 · 长期 8 折</button>
     </div>
     <div class="codebox" id="codebox">
       <div class="code" id="code"></div>
-      <div class="tip">到店报暗号 → 全场 8 折（不含团购/套餐 · 特价菜 · 酒水）<br>📞 0755-26922888 / 13827492749 · 7 天有效</div>
+      <div class="tip">到店报码 → 全场 8 折（不含团购/套餐 · 特价菜 · 酒水）<br>📞 0755-26922888 / 13827492749 · 长期有效 · 不限次数<br><span style="opacity:.7">请截图保存，每次到店报同一个码</span></div>
     </div>
   </div>
 </div>
@@ -118,39 +118,35 @@
   <div class="row">📍 深圳南山南海大道万融大厦C座G层101（地铁2号线水湾站D口）</div>
   <div class="row">🕐 10:00–22:30 全年无休 · 📞 0755-26922888 / 13827492749</div>
   <div class="row dianping">⭐ 大众点评 4.8 分 · 11 年 · 0 食品安全事故</div>
+  <div class="row" style="opacity:.7;margin-top:8px">🔒 本页已移除· 能***的你，值得一顿 8 折</div>
 </div>
 
 <script>
-  // 暗号生成（与 CLI codes.py 同算法：HMAC-SHA256 → base32 前6位签名）
-  const SECRET = "REDACTED_SECRET_KEY";
-  const PREFIXES = ["STEAM","ZHENG","原味","锁鲜","蛇口"];
+  // 专属会员码：首次领码存 localStorage，之后复用同一个码。
+  // 签名密钥在服务端（api/issue-code.js），浏览器永远拿不到，杜绝伪造。
+  const STORE_KEY = "zheng_member_code";
 
-  function base32(bytes){
-    const A = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
-    let bits=0, val=0, out="";
-    for(const b of bytes){ val=(val<<8)|b; bits+=8;
-      while(bits>=5){ out+=A[(val>>>(bits-5))&31]; bits-=5; } }
-    if(bits>0) out+=A[(val<<(5-bits))&31];
-    return out;
-  }
-
-  async function sign(msg){
-    const enc = new TextEncoder();
-    const key = await crypto.subtle.importKey("raw", enc.encode(SECRET),
-      {name:"HMAC", hash:"SHA-256"}, false, ["sign"]);
-    const sig = await crypto.subtle.sign("HMAC", key, enc.encode(msg));
-    return base32(new Uint8Array(sig)).slice(0,6);
+  function showCode(code){
+    document.getElementById("code").textContent = code;
+    document.getElementById("codebox").style.display = "block";
   }
 
   async function genCode(){
-    const prefix = PREFIXES[Math.floor(Math.random()*PREFIXES.length)];
-    const d = new Date();
-    const mmdd = String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
-    const digits = String(Math.floor(Math.random()*10000)).padStart(4,"0");
-    const body = `${prefix}-${mmdd}-${digits}`;
-    const code = `${body}-${await sign(body)}`;
-    document.getElementById("code").textContent = code;
-    document.getElementById("codebox").style.display = "block";
+    const cached = localStorage.getItem(STORE_KEY);
+    if(cached){ showCode(cached); return; }   // 已有专属码，直接复用
+
+    try{
+      const resp = await fetch("/api/issue-code");
+      const data = await resp.json();
+      if(data.ok && data.code){
+        localStorage.setItem(STORE_KEY, data.code);
+        showCode(data.code);
+      }else{
+        showCode((data.error || "服务暂不可用") + "\n\n请用终端领码：zheng code");
+      }
+    }catch(e){
+      showCode("网络不可达，请用终端领码：zheng code");
+    }
   }
 </script>
 </body>
