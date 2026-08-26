@@ -251,7 +251,7 @@ tables:
 coupon:
   prefix: [STEAM, ZHENG, 原味, 锁鲜, 蛇口]
   discount: 全场8折
-  exclude: 不含团购/套餐 · 特价菜 · 酒水
+  exclude: 不含酒水饮料、特价菜 · 不与线上代金券、套餐同享
   valid_days: 7
   # 会员码有效期（天）：默认 365。会员码与暗号不同——领一次长期复用、不限次数。
   member_valid_days: 365
