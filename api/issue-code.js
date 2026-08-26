@@ -1,9 +1,11 @@
 // 用途：落地页「领专属会员码」的服务端函数（Vercel Serverless）。
 // 密钥从环境变量 ZHENG_SECRET 读，绝不进前端。签名算法与 CLI codes.py 一致。
-// 可选接收手机号：填了则把「手机号→码」「码→手机号」写入 Vercel KV（回头率统计用）。
+// 手机号：POST body 传，SHA256 哈希后存 KV（不存明文，回头率用哈希去重）。
+// 前缀：从 ZHENG_PREFIXES 环境变量读（逗号分隔），与 brand.yaml coupon.prefix 保持一致。
 const crypto = require("crypto");
 
-const PREFIXES = ["STEAM", "ZHENG", "原味", "锁鲜", "蛇口"];
+const PREFIXES = (process.env.ZHENG_PREFIXES || "STEAM,ZHENG,原味,锁鲜,蛇口")
+  .split(",").map((s) => s.trim()).filter(Boolean);
 const PHONE_RE = /^1\d{10}$/;
 
 function base32(bytes) {
@@ -28,6 +30,10 @@ function sign(body, secret) {
 
 function pad(n) {
   return String(n).padStart(2, "0");
+}
+
+function phoneHash(phone) {
+  return crypto.createHash("sha256").update(phone).digest("hex");
 }
 
 // 写 KV（配了 KV 才写；失败不影响发码）
@@ -58,16 +64,19 @@ module.exports = async function handler(req, res) {
     });
   }
 
-  // 读取手机号（GET query 或 POST body）
+  // 手机号只从 POST body 读（不走 GET query，避免手机号留在访问日志）
   let phone = "";
-  try {
-    if (req.method === "POST" && req.body) {
-      phone = String(req.body.phone || "").trim();
-    } else if (req.query && req.query.phone) {
-      phone = String(req.query.phone).trim();
+  if (req.method === "POST") {
+    try {
+      const chunks = [];
+      for await (const chunk of req) {
+        chunks.push(chunk);
+      }
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf-8") || "{}");
+      phone = String((body && body.phone) || "").trim();
+    } catch (e) {
+      phone = "";
     }
-  } catch (e) {
-    phone = "";
   }
   if (phone && !PHONE_RE.test(phone)) {
     return res.status(400).json({ ok: false, error: "手机号格式不正确" });
@@ -80,10 +89,11 @@ module.exports = async function handler(req, res) {
   const body = `${prefix}-${ymd}-${id}`;
   const code = `${body}-${sign(body, secret)}`;
 
-  // 记录手机号关联（配了 KV 才生效，失败静默）
+  // 手机号哈希后存 KV（不存明文），回头率用哈希去重
   if (phone) {
-    await kvSet(`phone:${phone}`, code);
-    await kvSet(`code:${code}`, phone);
+    const h = phoneHash(phone);
+    await kvSet(`phone:${h}`, code);
+    await kvSet(`code:${code}`, h);
   }
 
   return res.status(200).json({ ok: true, code, hasPhone: !!phone });

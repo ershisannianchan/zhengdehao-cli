@@ -188,8 +188,11 @@
   async function issueCode(phone){
     document.getElementById("phoneModal").style.display = "none";
     try{
-      const url = phone ? "/api/issue-code?phone=" + encodeURIComponent(phone) : "/api/issue-code";
-      const resp = await fetch(url);
+      const resp = await fetch("/api/issue-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(phone ? { phone: phone } : {}),
+      });
       const data = await resp.json();
       if(data.ok && data.code){
         localStorage.setItem(STORE_KEY, data.code);
