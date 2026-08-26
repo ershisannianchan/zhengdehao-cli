@@ -35,3 +35,9 @@ secret.old
 传播文案.md
 
 .vercel
+.env*
+
+# ── 工具自动生成（Vercel/Upstash 集成注入的 skill 等，非业务代码）──
+.agents/
+.claude/
+skills-lock.json
