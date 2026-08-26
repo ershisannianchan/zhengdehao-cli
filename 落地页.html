@@ -72,6 +72,21 @@
   .foot .row b{color:var(--cyan);}
   .foot .dianping{color:var(--green);}
 
+  .modal{display:none; position:fixed; inset:0; background:rgba(0,0,0,.65); z-index:10;
+    align-items:center; justify-content:center; padding:20px;}
+  .modal-box{background:var(--panel); border:1px solid var(--border); border-radius:12px;
+    padding:24px 22px; max-width:360px; width:100%; text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.6);}
+  .modal-title{color:#fff; font-size:16px; font-weight:bold;}
+  .modal-desc{color:var(--dim); font-size:12px; margin:8px 0 16px; line-height:1.6;}
+  .modal-box input{width:100%; padding:11px; border:1px solid var(--border); border-radius:8px;
+    background:#0d1117; color:#fff; font-size:16px; text-align:center; letter-spacing:2px; outline:none;}
+  .modal-box input:focus{border-color:var(--yellow);}
+  .modal-btns{margin-top:14px; display:flex; gap:10px;}
+  .mbtn{flex:1; padding:11px; border-radius:8px; border:none; font-weight:bold; cursor:pointer; font-size:14px; font-family:inherit;}
+  .mbtn.primary{background:linear-gradient(180deg,#238636,#196c2e); color:#fff;}
+  .mbtn.ghost{background:transparent; color:var(--dim); border:1px solid var(--border);}
+
 </style>
 </head>
 <body>
@@ -129,6 +144,18 @@
   <div class="row" style="opacity:.7;margin-top:8px">🔒 本页已移除· 能***的你，值得一顿 8 折</div>
 </div>
 
+<div class="modal" id="phoneModal">
+  <div class="modal-box">
+    <div class="modal-title">关联手机号</div>
+    <div class="modal-desc">用于会员识别与回头率统计，不骚扰<br>（可跳过，跳过也能领码）</div>
+    <input type="tel" id="phoneInput" maxlength="11" placeholder="输入手机号" inputmode="numeric">
+    <div class="modal-btns">
+      <button class="mbtn primary" onclick="submitPhone()">关联手机号</button>
+      <button class="mbtn ghost" onclick="skipPhone()">跳过</button>
+    </div>
+  </div>
+</div>
+
 <script>
   // 专属会员码：首次领码存 localStorage，之后复用同一个码。
   // 签名密钥在服务端（api/issue-code.js），浏览器永远拿不到，杜绝伪造。
@@ -139,12 +166,30 @@
     document.getElementById("codebox").style.display = "block";
   }
 
-  async function genCode(){
+  function genCode(){
     const cached = localStorage.getItem(STORE_KEY);
     if(cached){ showCode(cached); return; }   // 已有专属码，直接复用
+    document.getElementById("phoneModal").style.display = "flex";
+  }
 
+  function submitPhone(){
+    const phone = document.getElementById("phoneInput").value.trim();
+    if(phone && !/^1\d{10}$/.test(phone)){
+      document.getElementById("phoneInput").style.borderColor = "#f85149";
+      return;
+    }
+    issueCode(phone);
+  }
+
+  function skipPhone(){
+    issueCode("");
+  }
+
+  async function issueCode(phone){
+    document.getElementById("phoneModal").style.display = "none";
     try{
-      const resp = await fetch("/api/issue-code");
+      const url = phone ? "/api/issue-code?phone=" + encodeURIComponent(phone) : "/api/issue-code";
+      const resp = await fetch(url);
       const data = await resp.json();
       if(data.ok && data.code){
         localStorage.setItem(STORE_KEY, data.code);
