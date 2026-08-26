@@ -32,8 +32,9 @@ function pad(n) {
   return String(n).padStart(2, "0");
 }
 
-function phoneHash(phone) {
-  return crypto.createHash("sha256").update(phone).digest("hex");
+function phoneHash(phone, secret) {
+  // HMAC 而非裸 SHA256：手机号空间太小，裸哈希可被彩虹表反推；带 secret 后不可行
+  return crypto.createHmac("sha256", secret).update(phone).digest("hex");
 }
 
 // 写 KV（配了 KV 才写；失败不影响发码）
@@ -65,8 +66,16 @@ module.exports = async function handler(req, res) {
   }
 
   // 手机号只从 POST body 读（不走 GET query，避免手机号留在访问日志）
+  // 兼容 Vercel 自动 body parser：优先 req.body，没有再回退手动读流
   let phone = "";
-  if (req.method === "POST") {
+  try {
+    if (req.body && req.body.phone) {
+      phone = String(req.body.phone).trim();
+    }
+  } catch (e) {
+    phone = "";
+  }
+  if (!phone && req.method === "POST") {
     try {
       const chunks = [];
       for await (const chunk of req) {
@@ -91,7 +100,7 @@ module.exports = async function handler(req, res) {
 
   // 手机号哈希后存 KV（不存明文），回头率用哈希去重
   if (phone) {
-    const h = phoneHash(phone);
+    const h = phoneHash(phone, secret);
     await kvSet(`phone:${h}`, code);
     await kvSet(`code:${code}`, h);
   }
