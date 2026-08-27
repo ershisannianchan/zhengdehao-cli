@@ -20,8 +20,8 @@ $ zheng
 ## 快速开始
 
 ```bash
-git clone https://github.com/ershisannianchan/zhengdehao-cli.git
-cd zhengdehao-cli
+git clone https://github.com/ershisannianchan/zhengdehao-haixianguan.git
+cd zhengdehao-haixianguan
 pip install -e .
 zheng --help
 ```
