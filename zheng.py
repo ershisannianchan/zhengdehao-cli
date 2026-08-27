@@ -26,6 +26,14 @@ try:
 except ImportError:
     HAS_QRCODE = False
 
+# Windows 老 cmd（GBK 代码页）防 emoji/中文输出崩溃：强制 stdout/stderr 走 UTF-8
+if sys.platform == "win32":
+    for _stream in (sys.stdout, sys.stderr):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 # 品牌配置（模块加载时读 brand.yaml）
 BRAND = _brand.load_brand()
 DIANPING_SHOP_URL = BRAND.dianping_url
@@ -1043,37 +1051,74 @@ def _copy_to_clipboard(text):
 
 
 # ----------------------------------------------------------
-# zheng verify（门店端验证暗号 / CLI 预订码）
+# zheng verify（门店端验证暗号 / CLI 预订码，支持 --file 批量对账）
 # ----------------------------------------------------------
-@cli.command()
-@click.argument("code_arg", required=False)
-def verify(code_arg):
-    """🔍 验证会员码 / 暗号 / CLI 预订码（门店端独立验证渠道）"""
-    banner()
-    if not code_arg:
-        print(c("  用法：zheng verify <码>", "yellow"))
-        print(c("  支持：会员码（STEAM-20260826-1234-XXXXXX）/ 暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
-        return
+
+# 从登记本自由文本中提取码（会员码 8 位日期 / 暗号·预订码 4 位日期）
+CODE_TOKEN_RE = re.compile(r"[A-Z一-鿿]+-\d{4,8}-\d{4}-[A-Z2-7]{6}")
+
+
+def _verify_one(code_arg):
+    """验一把码：返回 (是否有效或 None=无法识别, 类型标签, 说明)，会员码/暗号记核销日志。
+    先判预订码（ZDH 前缀更具体），再判会员码（8位签发日）、暗号（4位日期）。"""
     code_arg = code_arg.strip().upper()
-    # 先判预订码（ZDH 前缀更具体），再判会员码（8位签发日）、暗号（4位日期）
     if codes.BOOKING_CODE_RE.match(code_arg):
         ok, msg = verify_booking_code(code_arg)
-        label = "CLI 预订码"
-    elif codes.MEMBER_CODE_RE.match(code_arg):
+        return ok, "CLI 预订码", msg
+    if codes.MEMBER_CODE_RE.match(code_arg):
         ok, msg = verify_member_code(code_arg)
-        label = "会员码"
         BACKEND.record_redeem(code_arg, ok, {"channel": "verify", "kind": "member"})
-    elif codes.CODE_RE.match(code_arg):
+        return ok, "会员码", msg
+    if codes.CODE_RE.match(code_arg):
         ok, msg = verify_code(code_arg)
-        label = "暗号"
         BACKEND.record_redeem(code_arg, ok, {"channel": "verify", "kind": "coupon"})
-    else:
+        return ok, "暗号", msg
+    return None, "无法识别", "格式不符"
+
+
+@cli.command()
+@click.argument("code_arg", required=False)
+@click.option("--file", "-f", "batch_file", default=None,
+              help="批量验码：登记本文本文件（从每行自由文本中提取码，事后对账用）")
+def verify(code_arg, batch_file):
+    """🔍 验证会员码 / 暗号 / CLI 预订码（门店端独立验证渠道）"""
+    banner()
+
+    if batch_file:
+        if not os.path.exists(batch_file):
+            print(c(f"  ❌ 文件不存在：{batch_file}", "red"))
+            return
+        with open(batch_file, "r", encoding="utf-8") as f:
+            found = CODE_TOKEN_RE.findall(f.read().upper())
+        if not found:
+            print(c("  ❌ 未识别到任何码（格式：前缀-日期-4位-签名）", "red"))
+            return
+        print(c(f"  🔍 批量验码 · 共识别 {len(found)} 把", "bold"))
+        divider()
+        ok_n = 0
+        for code_i in found:
+            ok, label, msg = _verify_one(code_i)
+            ok_n += 1 if ok else 0
+            print(f"  {'✅' if ok else '❌'} {c(code_i, 'yellow')}  "
+                  f"{c(label + ' · ' + msg, 'green' if ok else 'red')}")
+        divider()
+        print(c(f"  汇总：有效 {ok_n} · 无效 {len(found) - ok_n}", "bold"))
+        print()
+        return
+
+    if not code_arg:
+        print(c("  用法：zheng verify <码>  或  zheng verify --file 登记本.txt", "yellow"))
+        print(c("  支持：会员码（STEAM-20260826-1234-XXXXXX）/ 暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
+        return
+
+    ok, label, msg = _verify_one(code_arg)
+    if ok is None:
         print(c(f"  ❌ 无法识别：{code_arg}", "red"))
         print(c("  支持：会员码（STEAM-20260826-1234-XXXXXX）/ 暗号（STEAM-0805-1234-XXXXXX）/ 预订码（ZDH-0801-1234-XXXXXX）", "cyan"))
         return
     print(c(f"\n  🔍 {label}验证", "bold"))
     divider()
-    print(c(f"  码：{code_arg}", "yellow"))
+    print(c(f"  码：{code_arg.strip().upper()}", "yellow"))
     print(c(f"  状态：{'✅' if ok else '❌'} {msg}", "green" if ok else "red"))
     print()
 
@@ -1100,6 +1145,7 @@ def stats():
     print()
     print(c("  💡 数据来源：~/.zheng/data/ledger.jsonl（本地核销日志）", "cyan"))
     print(c("  💡 回头率 = 核销过 2 次以上的码占唯一码的比例（会员码可复用）", "cyan"))
+    print(c("  💡 口径：发码数只含 CLI 渠道（落地页发码在 Vercel KV）；核销数来自对账时 verify 记录", "cyan"))
     print()
 
 

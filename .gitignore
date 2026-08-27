@@ -41,3 +41,6 @@ secret.old
 .agents/
 .claude/
 skills-lock.json
+
+# 内部 AI skill 文件（不进公开仓库）
+SKILL.md

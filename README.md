@@ -36,7 +36,7 @@ zheng --help
 | `zheng book [人数]` | 预订桌位（日期/时段/桌型，桌位按时段占用） |
 | `zheng cancel / status` | 取消预订 / 查订单 |
 | `zheng code` | 领专属会员码（HMAC 签名，门店离线可验真伪） |
-| `zheng verify <码>` | 门店端验证会员码 / 暗号 / 预订码 |
+| `zheng verify <码>` / `zheng verify --file 登记本.txt` | 门店端验证会员码 / 暗号 / 预订码；--file 批量对账 |
 | `zheng share` | 生成终端分享卡片 + HTML 截图版 |
 | `zheng ping / uptime / bench / pr` | 极客梗命令（ping 渔港、点菜走 PR 流程……） |
 | `zheng ask` | AI 管家（配 DeepSeek api_key 后是真 AI，否则离线问答） |

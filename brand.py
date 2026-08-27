@@ -5,6 +5,7 @@
 售卖入口：换一个客户 = 复制一份 brand.yaml 改数据，代码框架零改动。
 """
 import os
+import sys
 
 import yaml
 
@@ -149,11 +150,19 @@ class Brand:
 
 
 def load_brand(path=None):
-    """加载品牌配置。查找顺序：显式 path > ZHENG_BRAND 环境变量 > 包目录 brand.yaml。
+    """加载品牌配置。查找顺序：显式 path > ZHENG_BRAND 环境变量 > 包目录 brand.yaml
+    > data-files 安装位（pip 普通安装时 brand.yaml 落到 <prefix>/share/zhengdehao/）。
     售卖时用 ZHENG_BRAND 指向客户自己的 brand.yaml。"""
     if path is None:
-        path = os.environ.get("ZHENG_BRAND") or os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "brand.yaml")
+        env = os.environ.get("ZHENG_BRAND")
+        if env:
+            path = env
+        else:
+            candidates = [
+                os.path.join(os.path.dirname(os.path.abspath(__file__)), "brand.yaml"),
+                os.path.join(sys.prefix, "share", "zhengdehao", "brand.yaml"),
+            ]
+            path = next((c for c in candidates if os.path.exists(c)), candidates[0])
     with open(path, "r", encoding="utf-8") as f:
         data = yaml.safe_load(f)
     if not isinstance(data, dict):
