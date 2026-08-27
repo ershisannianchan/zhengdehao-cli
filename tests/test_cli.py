@@ -6,11 +6,13 @@ import datetime
 from click.testing import CliRunner
 
 import codes
-from zheng import BRAND, cli
+from zheng import cli
 
 
-def test_verify_cli_recognizes_booking_code():
-    secret = BRAND.secret_key
+def test_verify_cli_recognizes_booking_code(monkeypatch):
+    # 注入测试密钥：开源后任何人 clone 都能跑，不依赖本机 ~/.zheng/secret
+    monkeypatch.setenv("ZHENG_SECRET", "test-secret-key")
+    secret = "test-secret-key"
     # 用相对日期，不能写死——预订码要求到店日在今天起 30 天内，
     # 写死的日期会随时间流逝变成过去时间，让测试无故变红。
     arrival = (datetime.date.today() + datetime.timedelta(days=7)).isoformat()

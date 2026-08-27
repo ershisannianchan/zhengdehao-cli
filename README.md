@@ -1,167 +1,84 @@
 # 🦞 蒸的好海鲜馆 CLI
 
-> 深圳南山蛇口 · 蒸汽锁鲜 · 命令行营销终端  
-> v3.0 —— 品牌数据外置，一套框架可复用于多个餐饮客户
+> Steam is the sauce. —— 给程序员客群做的餐饮营销终端：在命令行里看菜单、领会员码、读品牌故事、玩极客梗，截图即传播。
 
-## 这是什么
+这是一个**品牌可配置的餐饮营销 CLI 框架**：代码与品牌数据完全分离，整套终端的品牌、菜单、故事、优惠规则全部来自一份 `brand.yaml`。仓库内置的示例是深圳一家真实蒸汽海鲜店的配置，换上你自己的 yaml，就是另一家店。
 
-给程序员客群做的餐饮营销 CLI：终端里看菜单、领暗号、看品牌故事、玩梗命令，
-截图即传播。核心设计是**「一套 CLI 框架 + 每客户一个 brand.yaml 配置」**，
-换客户不用改代码，只换配置。
-
-## 安装
+## 它长什么样
 
 ```bash
-# 1. 确认 Python 版本（需要 3.8+）
-python --version
+$ zheng
+╔══════════════════════════════════════════════════╗
+║   蒸的好海鲜馆 · 蒸汽海鲜（蛇口网谷店）
+║   Established 2015 · Steam is the sauce. · 11y uptime
+╚══════════════════════════════════════════════════╝
+  门店  故事  菜单  预订  优惠  暗号
+```
 
-# 2. 安装（开发模式，改代码即时生效；自动装 click / qrcode / PyYAML）
+进入交互模式后直接说人话：`菜单` / `预订 4人` / `看海鲜` / `暗号`。
+
+## 快速开始
+
+```bash
+git clone https://github.com/ershisannianchan/zhengdehao-cli.git
+cd zhengdehao-cli
 pip install -e .
-
-# 3. 验证
 zheng --help
 ```
 
-安装后 `zheng` 命令在任何终端直接可用（cmd / PowerShell / Git Bash 通用）。
+需要 Python 3.8+，依赖只有 click / qrcode / PyYAML。
 
-## 使用方法
-
-```bash
-zheng --help          # 查看所有命令
-zheng menu            # 查看菜单
-zheng menu --hot      # 只看招牌菜
-zheng book 4          # 预订4人桌
-zheng cancel [订单号] # 取消订单 / 释放桌位
-zheng status          # 查看订单（预订记录）
-zheng code            # 领专属 8 折会员码（不含酒水饮料·特价菜，长期有效不限次数）
-zheng code --verify <会员码>   # 商家端验证会员码真伪（离线可验）
-zheng share           # 生成分享卡片
-zheng ping / uptime / bench / pr   # 极客梗命令
-zheng deals           # 大众点评套餐 & 代金券
-zheng info            # 门店信息
-zheng story           # 品牌故事（蒸/鲜/味）
-zheng ask             # AI 管家（配置 api_key 后走 DeepSeek，否则离线问答）
-```
-
-## 架构（v3.0）
-
-```
-zheng.py       # CLI 框架：品牌无关的命令/导航/交互/banner
-brand.py       # 读 brand.yaml → Brand 对象（售卖入口）
-brand.yaml     # 品牌数据：菜单/故事/金句/桌位/联系/暗号规则
-codes.py       # 暗号 HMAC 签名闭环 + 核销 Backend 抽象
-storage.py     # 持久化：数据统一落 ~/.zheng/data/
-zheng_ai.py    # 真 AI 问答（DeepSeek）
-zheng_fun.py   # 梗命令（ping/uptime/bench/pr）
-zheng_share.py # 分享卡片
-```
-
-- **品牌数据外置**：菜单 115 道、故事、金句、电话全部在 `brand.yaml`，代码零绑定。
-- **数据闭环**：暗号改为 **HMAC 签名码**（`STEAM-0805-1234-XXXXXX`），
-  商家离线即可验真伪，伪造/随手编的码直接拒绝；每次发码/核销写 `~/.zheng/data/ledger.jsonl`，
-  30 天后可统计「发 N / 核销 M」回答「有没有用」。
-- **可插拔后端**：核销后端抽象成 `Backend` 接口，默认本地日志，未来接飞书/自建只需实现三方法。
-
-## 数据在哪里
-
-所有运行时数据（订单 / 桌位 / 暗号 / 核销日志）统一落 `~/.zheng/data/`，
-可用环境变量 `ZHENG_HOME` 覆盖根目录。不再写包目录，升级不丢数据。
-
-## 签名密钥怎么配（必读）
-
-暗号和预订码用 HMAC 签名。**密钥泄露 = 任何人都能伪造折扣码，收银端验签会认成真码**，
-所以真密钥永远不进仓库，`brand.yaml` 里只放占位符。
-
-查找顺序（优先级从高到低）：
-
-| 来源 | 用途 |
-|------|------|
-| `ZHENG_SECRET` 环境变量 | CI / 容器 / 临时覆盖 |
-| `~/.zheng/secret` 文件 | **本机部署推荐** |
-| `brand.yaml` 的 `coupon.secret_key` | 占位符兜底，切勿用于生产 |
-
-首次部署：
-
-```bash
-python -c "import secrets; print(secrets.token_hex(16))" > ~/.zheng/secret
-```
-
-⚠️ 换密钥会让**所有已发出的旧码立即失效**。物料印刷、门店投放之前换，成本为零；
-投放之后再换，等于台卡上印的码全废。
-
-## 换客户 / 售卖入口
-
-```bash
-# 1. 复制一份品牌配置
-cp brand.yaml 新客户.yaml
-
-# 2. 改数据（店名/菜单/电话/点评ID）
-
-# 3. 给这个客户生成独立密钥（各客户密钥不同 → 暗号互不可伪造）
-python -c "import secrets; print(secrets.token_hex(16))" > ~/.zheng/secret
-
-# 4. 用环境变量指定配置启动
-ZHENG_BRAND=新客户.yaml zheng menu
-```
-
-一套框架，N 个客户各一份 yaml。
-
-## 命令速查
+## 核心命令
 
 | 命令 | 说明 |
 |------|------|
-| `menu [-c 分类/--hot/--all]` | 菜单；交互模式 `看凉菜` 只看单分类 |
-| `book [人数]` | 预订桌位（日期/时段/桌型） |
-| `cancel [订单号]` | 取消订单并释放桌位 |
-| `status [订单号]` | 订单状态 |
-| `code` / `code --verify 暗号` | 领签名暗号 / 商家独立验真伪 |
-| `verify [码]` | 门店端验证暗号 / CLI 预订码 |
-| `share` | 分享卡片（终端 + HTML 截图） |
-| `ping` / `uptime` / `bench` / `pr` | 极客梗命令 |
-| `dishes` | 菜品素材盘点 |
-| `img [编号]` | 查看菜品图片（有素材的菜带 📷） |
-| `view [rooms/dishes/video]` | 查看本地资源 |
-| `deals` | 大众点评套餐 & 代金券 + 扫码 |
-| `story` | 品牌故事（蒸/鲜/味） |
-| `ask [问题]` | AI 管家（隐藏命令，需 `config set api_key`） |
-| `info` | 门店信息 |
+| `zheng menu [-c 分类/--hot/--all]` | 菜单浏览，交互模式支持 `看凉菜` |
+| `zheng book [人数]` | 预订桌位（日期/时段/桌型，桌位按时段占用） |
+| `zheng cancel / status` | 取消预订 / 查订单 |
+| `zheng code` | 领专属会员码（HMAC 签名，门店离线可验真伪） |
+| `zheng verify <码>` | 门店端验证会员码 / 暗号 / 预订码 |
+| `zheng share` | 生成终端分享卡片 + HTML 截图版 |
+| `zheng ping / uptime / bench / pr` | 极客梗命令（ping 渔港、点菜走 PR 流程……） |
+| `zheng ask` | AI 管家（配 DeepSeek api_key 后是真 AI，否则离线问答） |
+| `zheng deals / info / story` | 点评二维码 / 门店信息 / 品牌故事 |
 
-## 商家端验证 & 分享
+## 暗号签名闭环（为什么门店敢认这个码）
 
-**验证暗号（收银时，离线可验）**
+会员码格式：`前缀-签发日-4位-HMAC签名`，例如 `STEAM-20260826-1234-A1B2C3`。
 
-```bash
-zheng code --verify <顾客报的暗号>   # 例：zheng code --verify STEAM-0805-1234-A1B2C3
-zheng verify <码>                    # 通用验证：暗号 / CLI 预订码都支持
-```
+- 门店端 `zheng verify <码>` **离线重算签名即可验真伪**，伪造/随手编的码直接拒绝
+- 每次发码/核销写入本地 JSONL 日志（`~/.zheng/data/ledger.jsonl`），`zheng stats` 输出回头率
+- 核销后端抽象成 `Backend` 接口，默认本地日志，接飞书/自建后端只需实现三个方法
 
-- 暗号 = 前缀 + 日期段 + 4 位 + **6 位 HMAC 签名**，商家端无需联网/共享文件即可验真伪。
-- 生成日起 **7 天有效**，过期或伪造码直接拒绝。
-- CLI 预订码 = `ZDH-日期段-4位-签名`，识别 CLI 渠道，当日及之后 30 天内有效。
-
-**分享给同事**
+**密钥配置**（门店侧必做）：签名密钥不进仓库。按优先级读取 `ZHENG_SECRET` 环境变量 → `~/.zheng/secret` 文件。未配置时 CLI 拒绝发码（空密钥签出的码任何人都能伪造）。
 
 ```bash
-zheng code --share    # 生成暗号 + 分享文案，自动复制剪贴板
-zheng share           # 生成分享卡片（终端 ASCII + share.html 截图版）
+python -c "import secrets; print(secrets.token_hex(16))" > ~/.zheng/secret
 ```
 
-## v3.0 变更
+⚠️ 换密钥会让所有已发出的旧码失效，投放物料之前换成本为零。
 
-- **品牌数据外置**：菜单/故事/金句/电话/点评ID 迁到 `brand.yaml`，代码品牌无关。
-- **暗号签名闭环**：HMAC 签名防伪造，新增核销日志（数据闭环）。
-- **数据目录统一**：运行时数据迁 `~/.zheng/data/`，支持 `ZHENG_HOME` 覆盖。
-- **砍掉点餐/支付**：定位聚焦传播，到店点餐/现场结算。
-- **修复跨年 bug**：12 月发的暗号次年 1 月验证不再误判「未来无效」。
-- **补测试**：暗号签名/跨年/日期解析/菜单加载，`pytest -q` 全绿。
+## 换成你自己的品牌
 
-## 关于
+```bash
+cp brand.yaml 你的品牌.yaml   # 改店名/菜单/电话/点评 shop_id/暗号前缀
+ZHENG_BRAND=你的品牌.yaml zheng menu
+```
 
-蒸的好海鲜馆·蒸汽海鲜（蛇口网谷店）  
-大众点评收录11年 · 评分4.8分  
-主打蒸汽锁鲜技术，新鲜直采，保留海鲜原味。
+框架代码零改动。`brand.py` 里的 `Brand` 对象负责全部品牌字段的结构化访问。
 
-📍 深圳市南山区南海大道万融大厦C座G层101  
-🚇 地铁2号线水湾站D口步行约410米  
-📞 0755-26922888 / 13827492749  
-🕐 10:00 - 22:30 全年无休
+## 附：落地页领码（可选）
+
+`index.html` + `api/issue-code.js` 是一套 Vercel 部署的配套落地页：用户填手机号领会员码（手机号经 HMAC 哈希后存 Vercel KV，不存明文）。部署时配置环境变量 `ZHENG_SECRET`（与门店 CLI 一致）和 `ZHENG_PREFIXES`（与 brand.yaml 的 `coupon.prefix` 一致）。
+
+## 开发
+
+```bash
+python -m pytest tests -q   # 20 个测试：签名防伪/跨年/日期解析/菜单结构/CLI 集成
+```
+
+数据落盘统一在 `~/.zheng/data/`（可用 `ZHENG_HOME` 覆盖），不污染包目录。
+
+## License
+
+代码 MIT（见 LICENSE）。`brand.yaml` 中「蒸的好海鲜馆」为真实门店的示例数据，品牌权利归门店所有——换成你自己客户的配置即可自由商用。

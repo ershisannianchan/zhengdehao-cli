@@ -1,9 +1,29 @@
-Copyright (c) 2026 丁力. All rights reserved.
+MIT License
 
-本软件（「蒸的好海鲜馆 CLI」）及其品牌配置（brand.yaml）为专有软件，
-仅供「蒸的好海鲜馆」项目使用。
+Copyright (c) 2026 丁力（丁力AI餐饮品牌策划）
 
-未经著作权人书面授权，禁止以任何形式复制、分发、修改、出租、转让或
-将本软件用于其他品牌 / 其他客户的商业用途。
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-「换客户」时请为每个客户单独创建一份 brand.yaml 配置，并单独取得授权。
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+说明：本 MIT 协议覆盖仓库中的框架代码（zheng.py / codes.py / brand.py /
+storage.py 等）。brand.yaml 中的「蒸的好海鲜馆」品牌数据（店名、菜单、
+故事文案等）为该门店的真实经营资料，仅作示例演示之用，其品牌权利归
+门店所有，不代表你可以将「蒸的好」品牌用于自己的商业项目。换用你自己
+客户的 brand.yaml 即可，框架代码本身完全自由使用。
