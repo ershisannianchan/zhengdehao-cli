@@ -42,5 +42,5 @@ secret.old
 .claude/
 skills-lock.json
 
-# 内部 AI skill 文件（不进公开仓库）
-SKILL.md
+# 内部 AI skill 文件（不进公开仓库）；仓库根的 SKILL.md 是公开 agent 分发件
+SKILL.internal.md
